@@ -20,7 +20,7 @@ formLogin.addEventListener('submit', async (e) => {
 
         if (respuesta.ok && datos?.user?.id) {
             localStorage.setItem('usuarioId', datos.user.id); 
-            window.location.href = '/gestion'; 
+            window.location.href = '/'; 
         } else {
             throw new Error(datos.mensaje || "Credenciales incorrectas o correo no verificado");
         }
@@ -89,7 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 if (uid) {
                     localStorage.setItem('usuarioId', uid); 
-                    window.location.href = '/gestion';
+                    window.location.href = '/';
                 }
             } catch (e) {
                 console.error("Error al decodificar el token de acceso:", e);

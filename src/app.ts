@@ -8,6 +8,7 @@ import rutaSitio from './routes/rutaSitio';
 import rutaAnfiteatro from './routes/rutaAnfiteatro';
 import rutaPalco from './routes/rutaPalco';
 import rutaTicket from './routes/rutaTicket';
+import rutaPago from './routes/rutaPago';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/sitios', rutaSitio);
 app.use('/api/anfiteatros', rutaAnfiteatro);
 app.use('/api/palcos', rutaPalco);
 app.use('/api/tickets', rutaTicket);
+app.use('/api/pago', rutaPago);
 
 
 app.get('/config/stripe-key', (req, res) => {
@@ -31,6 +33,10 @@ app.get('/config/stripe-key', (req, res) => {
 app.use(express.static(path.join(__dirname, '../front'))); 
 
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/main.html'));
+});
+
+app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/login.html'));
 });
 

@@ -767,3 +767,46 @@ body {
         justify-content: center;
     }
 }
+
+.hidden {
+    display: none !important;
+}
+
+.date-input {
+    background-color: var(--surface);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-button);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--on-surface);
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.date-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+}
+
+.no-events {
+    text-align: center;
+    padding: 2rem;
+    color: var(--on-surface-variant);
+    font-size: 0.875rem;
+}
+
+.checkout-section {
+    background-color: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-card);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.checkout-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+}

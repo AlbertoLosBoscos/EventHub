@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import {supabase} from '../../supabase'
 
-const tablaEvento = 'BDEvento';
+const tablaEvento = 'BDEventos';
 
 export const verEventos = async (req: Request, res: Response) => {
     try {
@@ -59,6 +59,33 @@ export const verDetalles = async (req: Request, res: Response) => {
             res.status(404).json({ error: 'Evento no encontrado' });
             return;
         }
+
+        res.json(data);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const verEventosPorFecha = async (req: Request, res: Response) => {
+    const { fecha } = req.query;
+    
+    if (!fecha) {
+        res.status(400).json({ error: 'Falta la fecha' });
+        return;
+    }
+
+    try {
+        const fechaInicio = fecha as string;
+        const fechaFin = fecha as string + 'T23:59:59';
+
+        const { data, error } = await supabase
+            .from(tablaEvento)
+            .select('*')
+            .gte('fecha', fechaInicio)
+            .lte('fecha', fechaFin)
+            .order('fecha', { ascending: true });
+
+        if (error) throw error;
 
         res.json(data);
     } catch (error: any) {

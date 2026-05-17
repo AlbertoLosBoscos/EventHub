@@ -1,0 +1,100 @@
+### ==================== AUTENTIFICACIÓN ====================
+
+### Registro de usuario
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Alberto",
+  "email": "alberto.ruiz@salesianoslosboscos.com",
+  "password": "Hola123"
+}
+
+### Login de usuario
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alberto.ruiz@salesianoslosboscos.com",
+  "password": "Hola123"
+}
+
+### ==================== EVENTOS ====================
+
+### Ver todos los eventos
+GET http://localhost:3000/api/eventos/mostrar
+
+### Crear evento
+POST http://localhost:3000/api/eventos/crear
+Content-Type: application/json
+
+{
+  "nombre": "Concierto de Rock",
+  "descripcion": "Un increíble concerto de rock",
+  "sitioID": "22d22dc4-2311-4e8e-b90c-96e3678d259e",
+  "fecha": "2026-05-20T20:00:00",
+  "compania": "Banda Rock",
+  "duracion": 120
+}
+
+### Ver eventos por fecha específica
+GET http://localhost:3000/api/eventos/por-fecha?fecha=2026-05-20
+
+### Ver detalles de un evento específico
+GET http://localhost:3000/api/eventos/detalles/123e4567-e89b-12d3-a456-426614174000
+
+
+### ==================== SITIOS ====================
+
+### Ver todos los sitios/recintos
+GET http://localhost:3000/api/sitios/mostrar
+
+### Crear sitio
+POST http://localhost:3000/api/sitios/crear
+Content-Type: application/json
+
+{
+  "nombre": "WiZink Center",
+  "aforo": 1500,
+  "anfiteatrosID": null
+}
+
+
+### ==================== TICKETS ====================
+
+### Ver todos los tickets
+GET http://localhost:3000/api/tickets/mostrar
+
+### Ver tickets por usuario
+GET http://localhost:3000/api/tickets/por-usuario?usuarioID=123e4567-e89b-12d3-a456-426614174000
+
+### Ver asientos ocupados de un evento
+GET http://localhost:3000/api/tickets/asientos-ocupados?eventoID=123e4567-e89b-12d3-a456-426614174000
+
+### Crear ticket (compra)
+POST http://localhost:3000/api/tickets/crear
+Content-Type: application/json
+
+{
+  "usuarioID": "123e4567-e89b-12d3-a456-426614174000",
+  "asientos": "1A, 1B, 2C",
+  "nEvento": "123e4567-e89b-12d3-a456-426614174000",
+  "fecha": "2026-05-20T20:00:00",
+  "duracion": 120
+}
+
+
+### ==================== STRIPE ====================
+
+### Obtener clave pública de Stripe
+GET http://localhost:3000/config/stripe-key
+
+
+### ==================== RUTAS ADICIONALES ====================
+
+### Ver anfiteatros
+GET http://localhost:3000/api/anfiteatros/mostrar
+
+### Ver palcos
+GET http://localhost:3000/api/palcos/mostrar

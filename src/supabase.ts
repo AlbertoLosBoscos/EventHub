@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_API_SHOP || '';
+const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_API_EVENTHUB || '';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 

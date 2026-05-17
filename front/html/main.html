@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventHub - Reserva de Entradas</title>
+    <script src="https://js.stripe.com/v3/"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -18,7 +19,6 @@
                 <a href="#" class="nav-link nav-link-active">Mis Tickets</a>
             </nav>
             <div class="header-actions">
-                <button class="btn-text">Acceder</button>
                 <button class="btn-primary">Cerrar Sesión</button>
             </div>
         </div>
@@ -26,22 +26,22 @@
 
     <main class="main">
         <div class="steps-indicator">
-            <div class="step">
+            <div class="step" id="stepIndicator1">
                 <div class="step-number step-number-active">1</div>
                 <span class="step-label">Fecha</span>
             </div>
             <div class="step-line"></div>
-            <div class="step">
+            <div class="step" id="stepIndicator2">
                 <div class="step-number step-number-active">2</div>
                 <span class="step-label">Evento</span>
             </div>
             <div class="step-line"></div>
-            <div class="step">
-                <div class="step-number step-number-active">3</div>
+            <div class="step step-inactive" id="stepIndicator3">
+                <div class="step-number">3</div>
                 <span class="step-label">Asientos</span>
             </div>
             <div class="step-line step-line-inactive"></div>
-            <div class="step step-inactive">
+            <div class="step step-inactive" id="stepIndicator4">
                 <div class="step-number">4</div>
                 <span class="step-label">Pago</span>
             </div>
@@ -51,61 +51,36 @@
             <div class="content-main">
                 <section class="date-summary">
                     <div class="date-summary-content">
-                        <p class="step-indicator">Paso 1: Fecha Seleccionada</p>
-                        <h2 class="date-selected">Sábado, 24 de Agosto, 2024</h2>
+                        <p class="step-indicator">Paso 1: Selecciona una Fecha</p>
+                        <input type="date" id="dateInput" class="date-input">
+                        <h2 class="date-selected" id="dateSelected"></h2>
                     </div>
-                    <button class="btn-edit">Editar</button>
                 </section>
 
                 <section class="events-section">
                     <div class="events-header">
                         <h2 class="events-title">Selecciona tu Evento</h2>
-                        <span class="events-count">3 eventos disponibles</span>
+                        <span class="events-count" id="eventsCount">0 eventos disponibles</span>
                     </div>
-                    <div class="events-grid">
-                        <div class="event-card event-card-selected">
-                            <div class="event-badge-selected">SELECCIONADO</div>
-                            <div class="event-image">
-                                <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=800" alt="Rock">
-                            </div>
-                            <div class="event-info">
-                                <span class="event-tag">Concierto</span>
-                                <h3 class="event-name">Concierto Rock</h3>
-                                <p class="event-location">📍 WiZink Center</p>
-                                <div class="event-footer">
-                                    <span class="event-price">€45.00</span>
-                                    <span class="event-check">✓</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="events-grid" id="eventsContainer">
                         <div class="event-card event-card-disabled">
                             <div class="event-image event-image-placeholder"></div>
                             <div class="event-info">
-                                <h3 class="event-name">El Rey León</h3>
-                                <p class="event-location">📍 Teatro</p>
+                                <h3 class="event-name">No hay eventos</h3>
+                                <p class="event-location">Selecciona una fecha</p>
                                 <div class="event-footer">
-                                    <span class="event-price">€85.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="event-card event-card-disabled">
-                            <div class="event-image event-image-placeholder"></div>
-                            <div class="event-info">
-                                <h3 class="event-name">Cine: Avatar 2</h3>
-                                <p class="event-location">📍 Cines</p>
-                                <div class="event-footer">
-                                    <span class="event-price">€12.50</span>
+                                    <span class="event-price">-</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="seats-section">
+                <section class="seats-section hidden" id="step3">
                     <div class="seats-header">
                         <div class="seats-title-block">
                             <h2 class="seats-title">Elige tus Asientos</h2>
-                            <p class="seats-subtitle">Sección General - WiZink Center</p>
+                            <p class="seats-subtitle">Sección General</p>
                         </div>
                         <div class="seats-legend">
                             <div class="legend-item">
@@ -131,6 +106,19 @@
                     <div class="seat-grid" id="seatGrid"></div>
                     <p class="seat-note">Selecciona los asientos haciendo clic en los disponibles.</p>
                 </section>
+
+                <section class="checkout-section hidden" id="step4">
+                    <div class="checkout-form">
+                        <h2 class="checkout-title">Datos de Pago</h2>
+                        <input type="text" placeholder="Número de tarjeta" class="form-input">
+                        <div class="form-row">
+                            <input type="text" placeholder="MM / YY" class="form-input">
+                            <input type="text" placeholder="CVC" class="form-input">
+                        </div>
+                        <button class="btn-buy" id="confirmPurchase">Confirmar Compra</button>
+                        <p class="secure-note">🔒 Conexión segura vía Stripe API</p>
+                    </div>
+                </section>
             </div>
 
             <aside class="sidebar">
@@ -139,36 +127,33 @@
                     <div class="summary-items">
                         <div class="summary-item">
                             <div class="summary-item-info">
-                                <p class="summary-item-name">Concierto Rock</p>
-                                <p class="summary-item-detail">WiZink Center • Madrid</p>
+                                <p class="summary-item-name" id="summaryEventName">Ningún evento seleccionado</p>
+                                <p class="summary-item-detail" id="summaryEventDetail">-</p>
                             </div>
-                            <span class="summary-item-price">€45.00 / ud</span>
+                            <span class="summary-item-price" id="summaryEventPrice">€0.00 / ud</span>
                         </div>
                         <div class="summary-seats">
-                            <p class="summary-seats-label">ASIENTOS (<span id="seatCount">2</span>)</p>
+                            <p class="summary-seats-label">ASIENTOS (<span id="seatCount">0</span>)</p>
                             <div class="summary-seats-list" id="selectedSeatsList">
-                                <span class="seat-tag">FILA 1, E1</span>
-                                <span class="seat-tag">FILA 1, F1</span>
                             </div>
                         </div>
                     </div>
                     <div class="summary-totals">
                         <div class="summary-row">
                             <span>Subtotal</span>
-                            <span id="subtotal">€90.00</span>
+                            <span id="subtotal">€0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Gestos de gestión</span>
-                            <span id="serviceFee">€4.50</span>
+                            <span id="serviceFee">€0.00</span>
                         </div>
                         <div class="summary-row summary-total">
                             <span>Total</span>
-                            <span id="total">€94.50</span>
+                            <span id="total">€0.00</span>
                         </div>
                     </div>
 
                     <div class="checkout-form">
-                        <input type="text" placeholder="Nombre en la tarjeta" class="form-input">
                         <input type="text" placeholder="Número de tarjeta" class="form-input">
                         <div class="form-row">
                             <input type="text" placeholder="MM / YY" class="form-input">
