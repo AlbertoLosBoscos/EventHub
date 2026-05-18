@@ -6,12 +6,51 @@ const SERVICE_FEE_PERCENTAGE = 0.05;
 
 let selectedSeats = [];
 let currentEvent = null;
+let currentTicket = null;
 let currentDate = null;
 let occupiedSeats = [];
 let stripe = null;
 let stripePublicKey = null;
 
 const API_BASE = 'http://localhost:3000/api';
+
+async function crearTicket(usuarioID, asientos, eventoID, fecha, duracion) {
+    try {
+        const response = await fetch(`${API_BASE}/tickets/crear`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuarioID, asientos, eventoID, fecha, duracion })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return { error: error.message };
+    }
+}
+
+async function actualizarTicket(ticketID, asientos, confirmado) {
+    try {
+        const response = await fetch(`${API_BASE}/tickets/actualizar`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketID, asientos, confirmado })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return { error: error.message };
+    }
+}
+
+async function obtenerTicketUsuarioEvento(usuarioID, eventoID) {
+    try {
+        const response = await fetch(`${API_BASE}/tickets/por-usuario-y-evento?usuarioID=${usuarioID}&eventoID=${eventoID}`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
 
 async function fetchStripeKey() {
     try {
@@ -57,21 +96,6 @@ async function fetchAsientosOcupados(eventoID) {
     } catch (error) {
         console.error('Error:', error);
         return [];
-    }
-}
-
-async function crearTicket(datos) {
-    try {
-        const response = await fetch(`${API_BASE}/tickets/crear`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
-        if (!response.ok) throw new Error('Error al crear ticket');
-        return await response.json();
-    } catch (error) {
-        console.error('Error:', error);
-        return { error: error.message };
     }
 }
 
@@ -128,6 +152,16 @@ function toggleSeat(seatElement, seatId) {
         selectedSeats.push(seatId);
         seatElement.classList.add('seat-selected');
         seatElement.textContent = '✓';
+    }
+
+    console.log('Asientos actualizados:', selectedSeats);
+    console.log('Ticket actual:', currentTicket);
+    
+    if (currentTicket && currentTicket.id) {
+        console.log('Actualizando ticket:', currentTicket.id, 'asientos:', selectedSeats.join(', '));
+        actualizarTicket(currentTicket.id, selectedSeats.join(', '), false);
+    } else {
+        console.warn('No hay ticket para actualizar');
     }
 
     updateSummary();
@@ -191,7 +225,11 @@ function renderizarEventos(eventos) {
     `).join('');
 }
 
-window.seleccionarEvento = function(eventoId, nombre, duracion, fecha) {
+window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
+    alert('Seleccionando evento: ' + eventoId);
+    const usuarioID = localStorage.getItem('usuarioId') || 'demo-user-123';
+    alert('UsuarioID: ' + usuarioID);
+    
     currentEvent = { eventoId, nombre, duracion, fecha };
     
     document.querySelectorAll('.event-card').forEach(card => {
@@ -204,17 +242,62 @@ window.seleccionarEvento = function(eventoId, nombre, duracion, fecha) {
         selectedCard.innerHTML += '<div class="event-badge-selected">SELECCIONADO</div>';
     }
 
+    alert('Buscando ticket existente...');
+    const ticketExistente = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
+    alert('Ticket existente: ' + JSON.stringify(ticketExistente));
+    
+    if (ticketExistente && ticketExistente.id) {
+        currentTicket = ticketExistente;
+        alert('Ticket cargado: ' + currentTicket.id);
+        if (ticketExistente.asientos) {
+            selectedSeats = ticketExistente.asientos.split(',').map(s => s.trim()).filter(s => s);
+        } else {
+            selectedSeats = [];
+        }
+    } else {
+        alert('Creando nuevo ticket...');
+        const result = await crearTicket(usuarioID, '', eventoId, fecha, duracion);
+        alert('Resultado crearTicket: ' + JSON.stringify(result));
+        if (result.data && result.data.id) {
+            currentTicket = result.data;
+            selectedSeats = [];
+            alert('Ticket creado con ID: ' + currentTicket.id);
+        } else if (result.error) {
+            alert('Error al crear ticket: ' + result.error);
+        } else if (result.message) {
+            alert('Ticket actualizado: ' + result.message);
+            const ticketActualizado = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
+            if (ticketActualizado && ticketActualizado.id) {
+                currentTicket = ticketActualizado;
+            }
+        }
+    }
+
     document.getElementById('step3').classList.remove('hidden');
     document.getElementById('stepIndicator3').classList.remove('step-inactive');
     updateStepIndicator(3);
     
-    cargarAsientosOcupados(eventoId);
+    await cargarAsientosOcupados(eventoId);
+    
+    updateSummary();
 };
 
 async function cargarAsientosOcupados(eventoId) {
+    const asientosPreviamenteSeleccionados = [...selectedSeats];
     occupiedSeats = await fetchAsientosOcupados(eventoId);
     generateSeatGrid();
-    selectedSeats = [];
+    
+    asientosPreviamenteSeleccionados.forEach(seatId => {
+        if (!occupiedSeats.includes(seatId)) {
+            selectedSeats.push(seatId);
+            const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
+            if (seat) {
+                seat.classList.add('seat-selected');
+                seat.textContent = '✓';
+            }
+        }
+    });
+    
     updateSummary();
 }
 
@@ -309,22 +392,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             alert('Pago procesado correctamente');
 
-            const ticketResult = await crearTicket({
-                usuarioID: localStorage.getItem('usuarioId') || 'demo-user-123',
-                asientos: selectedSeats.join(', '),
-                nEvento: currentEvent.eventoId,
-                fecha: currentEvent.fecha,
-                duracion: currentEvent.duracion
-            });
+            if (currentTicket && currentTicket.id) {
+                const ticketResult = await actualizarTicket(
+                    currentTicket.id,
+                    selectedSeats.join(', '),
+                    true
+                );
 
-            console.log('ticketResult:', ticketResult);
+                console.log('ticketResult:', ticketResult);
 
-            if (ticketResult.error) {
-                alert('Error al crear ticket: ' + ticketResult.error);
+                if (ticketResult.error) {
+                    alert('Error al confirmar ticket: ' + ticketResult.error);
+                } else {
+                    alert('¡Compra confirmada! Gracias por tu compra en EventHub.');
+                    selectedSeats = [];
+                    currentTicket = null;
+                    updateSummary();
+                }
             } else {
-                alert('¡Compra confirmada! Gracias por tu compra en EventHub.');
-                selectedSeats = [];
-                updateSummary();
+                alert('Error: No hay ticket para confirmar');
             }
 
             btn.disabled = false;
