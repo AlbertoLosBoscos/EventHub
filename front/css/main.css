@@ -810,3 +810,28 @@ body {
     color: var(--primary);
     margin-bottom: 1.5rem;
 }
+
+.guest-notice {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: var(--surface-container);
+    border-radius: var(--radius-card);
+    color: var(--on-surface-variant);
+}
+
+.guest-notice a {
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.guest-notice a:hover {
+    text-decoration: underline;
+}
+
+.event-date {
+    font-size: 0.75rem;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.5rem;
+}

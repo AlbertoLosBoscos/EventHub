@@ -40,6 +40,10 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/login.html'));
 });
 
+app.get('/guest', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/guest.html'));
+});
+
 app.get('/registro', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/register.html')); 
 });

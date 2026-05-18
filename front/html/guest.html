@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Ver Eventos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">EventHub</div>
+            <nav class="nav">
+                <a href="#" class="nav-link">Explorar Eventos</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="window.location.href='/login'">Iniciar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="steps-indicator">
+            <div class="step" id="stepIndicator1">
+                <div class="step-number step-number-active">1</div>
+                <span class="step-label">Fecha</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="stepIndicator2">
+                <div class="step-number step-number-active">2</div>
+                <span class="step-label">Eventos</span>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="content-main" style="max-width: 800px; margin: 0 auto;">
+                <section class="date-summary">
+                    <div class="date-summary-content">
+                        <p class="step-indicator">Selecciona una Fecha</p>
+                        <input type="date" id="dateInput" class="date-input">
+                        <h2 class="date-selected" id="dateSelected"></h2>
+                    </div>
+                </section>
+
+                <section class="events-section">
+                    <div class="events-header">
+                        <h2 class="events-title">Eventos Disponibles</h2>
+                        <span class="events-count" id="eventsCount">0 eventos disponibles</span>
+                    </div>
+                    <div class="events-grid" id="eventsContainer">
+                        <div class="event-card event-card-disabled">
+                            <div class="event-image event-image-placeholder"></div>
+                            <div class="event-info">
+                                <h3 class="event-name">No hay eventos</h3>
+                                <p class="event-location">Selecciona una fecha</p>
+                                <div class="event-footer">
+                                    <span class="event-price">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="guest-notice">
+                    <p>🔐 <a href="/login">Inicia sesión</a> para comprar entradas</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">© 2024 EventHub. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="#">Privacidad</a>
+                <a href="#">Términos</a>
+                <a href="#">Ayuda</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/guest.js"></script>
+</body>
+</html>

@@ -353,6 +353,6 @@ const logoutBtn = document.querySelector('.btn-primary');
 if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('usuarioId');
-        window.location.href = '/login';
+        window.location.href = '/guest';
     });
 }
