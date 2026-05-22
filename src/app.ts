@@ -58,6 +58,10 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/admin.html'));
 });
 
+app.get('/tickets', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/tickets.html'));
+});
+
 app.post('/api/auth/verificar-admin', async (req, res) => {
     const { usuarioId } = req.body;
     if (!usuarioId) {

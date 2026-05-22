@@ -344,6 +344,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const navMisTickets = document.getElementById('navMisTickets');
     const navTodosTickets = document.getElementById('navTodosTickets');
 
+    const userEmailEl = document.getElementById('userEmail');
+    if (userEmailEl) {
+        userEmailEl.textContent = localStorage.getItem('userEmail') || '';
+    }
+
     if (adminLink && !isStaff) {
         adminLink.style.display = 'none';
     }
@@ -378,9 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await cargarEventosPorFecha(fecha);
         
         const step3 = document.getElementById('step3');
-        const step4 = document.getElementById('step4');
         if (step3) step3.classList.add('hidden');
-        if (step4) step4.classList.add('hidden');
     });
 
     const confirmBtns = document.querySelectorAll('#confirmPurchase');
@@ -471,208 +474,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('navEntradas').addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.main > .steps-indicator, .main > .content-grid').forEach(el => el.classList.remove('hidden'));
-        document.getElementById('misTicketsSection').classList.add('hidden');
         document.getElementById('navEntradas').classList.add('nav-link-active');
-        document.getElementById('navMisTickets').classList.remove('nav-link-active');
-    });
-
-    document.getElementById('navMisTickets').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.querySelectorAll('.main > .steps-indicator, .main > .content-grid').forEach(el => el.classList.add('hidden'));
-        document.getElementById('misTicketsSection').classList.remove('hidden');
-        document.getElementById('todosTicketsSection').classList.add('hidden');
-        document.getElementById('navMisTickets').classList.add('nav-link-active');
-        document.getElementById('navEntradas').classList.remove('nav-link-active');
-        document.getElementById('navTodosTickets').classList.remove('nav-link-active');
-        cargarMisTickets();
-    });
-
-    const navTodos = document.getElementById('navTodosTickets');
-    if (navTodos) {
-        navTodos.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.main > .steps-indicator, .main > .content-grid').forEach(el => el.classList.add('hidden'));
-            document.getElementById('todosTicketsSection').classList.remove('hidden');
-            document.getElementById('misTicketsSection').classList.add('hidden');
-            navTodos.classList.add('nav-link-active');
-            document.getElementById('navEntradas').classList.remove('nav-link-active');
-            document.getElementById('navMisTickets').classList.remove('nav-link-active');
-            cargarTodosTickets();
-        });
-    }
-
-    document.getElementById('btnFiltrarTickets').addEventListener('click', (e) => {
-        e.preventDefault();
-        cargarTodosTickets();
     });
 
     fetchStripeKey();
 });
-
-async function cargarMisTickets() {
-    const usuarioID = localStorage.getItem('usuarioId');
-    if (!usuarioID) return;
-
-    try {
-        const r = await fetch(`${API_BASE}/tickets/por-usuario?usuarioID=${usuarioID}`);
-        const tickets = await r.json();
-        const container = document.getElementById('ticketsList');
-        container.innerHTML = '';
-
-        const confirmados = tickets ? tickets.filter(t => t.confirmado) : [];
-
-        if (confirmados.length === 0) {
-            container.innerHTML = '<p class="ticket-empty">No tienes tickets confirmados.</p>';
-            return;
-        }
-
-        confirmados.forEach(ticket => {
-            const card = document.createElement('div');
-            card.className = 'ticket-card';
-            card.innerHTML = `
-                <div class="ticket-info">
-                    <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
-                    <p>Asientos: ${ticket.asientos || 'Ninguno'}</p>
-                    <p>Fecha: ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p>Estado: ✅ Confirmado</p>
-                </div>
-                <div class="ticket-actions">
-                    <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
-                    <button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-
-        container.querySelectorAll('.btn-ticket-detalle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
-                mostrarDetalleTicket(ticket);
-            });
-        });
-
-        container.querySelectorAll('.btn-ticket-devolver').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('¿Devolver esta entrada?')) return;
-                const ticketID = btn.dataset.id;
-                try {
-                    const r = await fetch(`${API_BASE}/tickets/devolver-cliente`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ticketID }),
-                    });
-                    const data = await r.json();
-                    if (r.ok) {
-                        alert('Entrada devuelta con éxito');
-                        cargarMisTickets();
-                    } else {
-                        alert('Error: ' + (data.error || 'desconocido'));
-                    }
-                } catch {
-                    alert('Error de conexión');
-                }
-            });
-        });
-    } catch {
-        document.getElementById('ticketsList').innerHTML = '<p class="ticket-empty">Error al cargar tickets.</p>';
-    }
-}
-
-async function cargarTodosTickets() {
-    const container = document.getElementById('todosTicketsList');
-    container.innerHTML = '<p class="ticket-empty">Cargando...</p>';
-
-    const ticketID = document.getElementById('filtroTicketID').value.trim();
-    const email = document.getElementById('filtroEmail').value.trim();
-
-    let url = `${API_BASE}/tickets/buscar?`;
-    if (ticketID) url += `ticketID=${encodeURIComponent(ticketID)}&`;
-    if (email) url += `email=${encodeURIComponent(email)}&`;
-
-    try {
-        const r = await fetch(url);
-        const tickets = await r.json();
-        container.innerHTML = '';
-
-        if (!tickets || tickets.length === 0) {
-            container.innerHTML = '<p class="ticket-empty">No se encontraron tickets.</p>';
-            return;
-        }
-
-        tickets.forEach(ticket => {
-            const card = document.createElement('div');
-            card.className = 'ticket-card';
-            card.innerHTML = `
-                <div class="ticket-info">
-                    <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
-                    <p>ID: ${ticket.id}</p>
-                    <p>Usuario: ${ticket.usuarioID || '-'}</p>
-                    <p>Asientos: ${ticket.asientos || 'Ninguno'}</p>
-                    <p>Fecha: ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p>Estado: ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
-                </div>
-                <div class="ticket-actions">
-                    <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
-                    <button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-
-        container.querySelectorAll('.btn-ticket-detalle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
-                mostrarDetalleTicket(ticket);
-            });
-        });
-
-        container.querySelectorAll('.btn-ticket-devolver').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('¿Devolver esta entrada?')) return;
-                const ticketID = btn.dataset.id;
-                try {
-                    const r = await fetch(`${API_BASE}/tickets/devolver-cliente`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ticketID }),
-                    });
-                    const data = await r.json();
-                    if (r.ok) {
-                        alert('Entrada devuelta con éxito');
-                        cargarTodosTickets();
-                    } else {
-                        alert('Error: ' + (data.error || 'desconocido'));
-                    }
-                } catch {
-                    alert('Error de conexión');
-                }
-            });
-        });
-    } catch {
-        container.innerHTML = '<p class="ticket-empty">Error al cargar tickets.</p>';
-    }
-}
-
-function mostrarDetalleTicket(ticket) {
-    const modal = document.createElement('div');
-    modal.className = 'ticket-detalle-modal';
-    modal.innerHTML = `
-        <div class="ticket-detalle-content">
-            <h3>Detalle del Ticket</h3>
-            <p><strong>ID:</strong> ${ticket.id}</p>
-            <p><strong>Evento ID:</strong> ${ticket.eventoID || '-'}</p>
-            <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
-            <p><strong>Fecha evento:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</p>
-            <p><strong>Duración:</strong> ${ticket.duracion || '-'} min</p>
-            <p><strong>Estado:</strong> ${ticket.confirmado ? 'Confirmado' : 'Pendiente'}</p>
-            <p><strong>Creado:</strong> ${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</p>
-            <button id="cerrarDetalle">Cerrar</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.querySelector('#cerrarDetalle').addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-}
 
 async function cargarEventosPorFecha(fecha) {
     const eventos = await fetchEventosPorFecha(fecha);
@@ -686,13 +492,13 @@ function formatDate(dateStr) {
 }
 
 document.getElementById('step3').classList.add('hidden');
-document.getElementById('step4').classList.add('hidden');
 
 const logoutBtn = document.querySelector('.btn-primary');
 if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('usuarioId');
         localStorage.removeItem('userRole');
+        localStorage.removeItem('userEmail');
         window.location.href = '/guest';
     });
 }

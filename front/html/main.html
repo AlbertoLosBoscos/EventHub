@@ -17,10 +17,11 @@
             <nav class="nav">
                 <a href="/admin" class="nav-link" id="adminLink">Administración</a>
                 <a href="#" class="nav-link nav-link-active" id="navEntradas">Entradas</a>
-                <a href="#" class="nav-link" id="navMisTickets">Mis Tickets</a>
-                <a href="#" class="nav-link" id="navTodosTickets">Todos los Tickets</a>
+                <a href="/tickets" class="nav-link" id="navMisTickets">Mis Tickets</a>
+                <a href="/tickets" class="nav-link" id="navTodosTickets">Todos los Tickets</a>
             </nav>
             <div class="header-actions">
+                <span class="user-email" id="userEmail"></span>
                 <button class="btn-primary">Cerrar Sesión</button>
             </div>
         </div>
@@ -156,23 +157,6 @@
                 </div>
             </aside>
         </div>
-        <section id="misTicketsSection" class="hidden">
-            <div class="mis-tickets-header">
-                <h2>Mis Tickets</h2>
-            </div>
-            <div id="ticketsList"></div>
-        </section>
-        <section id="todosTicketsSection" class="hidden">
-            <div class="mis-tickets-header">
-                <h2>Todos los Tickets</h2>
-            </div>
-            <div class="ticket-filtros">
-                <label>Filtrar por ID: <input type="text" id="filtroTicketID" placeholder="ID del ticket"></label>
-                <label>Filtrar por email: <input type="email" id="filtroEmail" placeholder="Email del usuario"></label>
-                <button id="btnFiltrarTickets">Buscar</button>
-            </div>
-            <div id="todosTicketsList"></div>
-        </section>
     </main>
 
     <footer class="footer">

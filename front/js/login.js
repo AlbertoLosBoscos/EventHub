@@ -21,6 +21,7 @@ formLogin.addEventListener('submit', async (e) => {
 
         if (respuesta.ok && datos?.user?.id) {
             localStorage.setItem('usuarioId', datos.user.id);
+            localStorage.setItem('userEmail', email);
             if (datos.role) localStorage.setItem('userRole', datos.role);
             window.location.href = '/main'; 
         } else {

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Tickets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">EventHub</div>
+            <nav class="nav">
+                <a href="/admin" class="nav-link" id="adminLink">Administración</a>
+                <a href="/main" class="nav-link">Entradas</a>
+                <a href="/tickets" class="nav-link nav-link-active" id="navTickets">Tickets</a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="userEmail"></span>
+                <button class="btn-primary">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section id="ticketsSection">
+            <div id="staffView" class="hidden">
+                <div class="mis-tickets-header">
+                    <h2>Todos los Tickets</h2>
+                </div>
+                <div class="ticket-filtros">
+                    <label>Filtrar por ID: <input type="text" id="filtroTicketID" placeholder="ID del ticket"></label>
+                    <label>Filtrar por email: <input type="email" id="filtroEmail" placeholder="Email del usuario"></label>
+                    <button id="btnFiltrarTickets">Buscar</button>
+                </div>
+                <div id="todosTicketsList"></div>
+            </div>
+            <div id="clientView">
+                <div class="mis-tickets-header">
+                    <h2>Mis Tickets</h2>
+                </div>
+                <div id="ticketsList"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">© 2024 EventHub. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="#">Privacidad</a>
+                <a href="#">Términos</a>
+                <a href="#">Ayuda</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/tickets.js"></script>
+</body>
+</html>

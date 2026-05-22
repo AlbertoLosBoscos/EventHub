@@ -95,6 +95,12 @@ body {
     gap: 1rem;
 }
 
+.user-email {
+    font-size: 0.8125rem;
+    color: var(--on-surface-variant);
+    white-space: nowrap;
+}
+
 .btn-text {
     background: none;
     border: none;
