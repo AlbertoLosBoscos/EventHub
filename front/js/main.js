@@ -69,9 +69,9 @@ async function fetchStripeKey() {
                 '::placeholder': { color: '#7a7579' },
             },
         };
-        const cardEl = elements.create('card', { style });
-        cardEl.mount('#card-element');
-        cardEl.on('change', ({ error }) => {
+        const cardNumber = elements.create('cardNumber', { style, showIcon: true });
+        cardNumber.mount('#card-number');
+        cardNumber.on('change', ({ error }) => {
             const displayError = document.getElementById('card-errors');
             if (error) {
                 displayError.textContent = error.message;
@@ -81,7 +81,11 @@ async function fetchStripeKey() {
                 displayError.style.display = 'none';
             }
         });
-        cardElements = cardEl;
+        const cardExpiry = elements.create('cardExpiry', { style });
+        cardExpiry.mount('#card-expiry');
+        const cardCvc = elements.create('cardCvc', { style });
+        cardCvc.mount('#card-cvc');
+        cardElements = cardNumber;
     } catch (error) {
         console.error('Error al cargar Stripe:', error);
     }
