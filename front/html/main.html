@@ -15,7 +15,7 @@
         <div class="header-container">
             <div class="logo">EventHub</div>
             <nav class="nav">
-                <a href="#" class="nav-link">Administrador</a>
+                <a href="/admin" class="nav-link">Administrador</a>
                 <a href="#" class="nav-link nav-link-active">Mis Tickets</a>
             </nav>
             <div class="header-actions">
@@ -110,10 +110,10 @@
                 <section class="checkout-section hidden" id="step4">
                     <div class="checkout-form">
                         <h2 class="checkout-title">Datos de Pago</h2>
-                        <input type="text" placeholder="Número de tarjeta" class="form-input">
+                        <input type="text" id="cardNumber" placeholder="Número de tarjeta" class="form-input">
                         <div class="form-row">
-                            <input type="text" placeholder="MM / YY" class="form-input">
-                            <input type="text" placeholder="CVC" class="form-input">
+                            <input type="text" id="cardExpiry" placeholder="MM / YY" class="form-input">
+                            <input type="text" id="cardCvc" placeholder="CVC" class="form-input">
                         </div>
                         <button class="btn-buy" id="confirmPurchase">Confirmar Compra</button>
                         <p class="secure-note">🔒 Conexión segura vía Stripe API</p>
@@ -154,10 +154,10 @@
                     </div>
 
                     <div class="checkout-form">
-                        <input type="text" placeholder="Número de tarjeta" class="form-input">
+                        <input type="text" id="cardNumber" placeholder="Número de tarjeta" class="form-input">
                         <div class="form-row">
-                            <input type="text" placeholder="MM / YY" class="form-input">
-                            <input type="text" placeholder="CVC" class="form-input">
+                            <input type="text" id="cardExpiry" placeholder="MM / YY" class="form-input">
+                            <input type="text" id="cardCvc" placeholder="CVC" class="form-input">
                         </div>
                         <button class="btn-buy" id="confirmPurchase">Confirmar Compra</button>
                         <p class="secure-note">🔒 Conexión segura vía Stripe API</p>

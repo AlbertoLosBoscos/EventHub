@@ -226,9 +226,7 @@ function renderizarEventos(eventos) {
 }
 
 window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
-    alert('Seleccionando evento: ' + eventoId);
     const usuarioID = localStorage.getItem('usuarioId') || 'demo-user-123';
-    alert('UsuarioID: ' + usuarioID);
     
     currentEvent = { eventoId, nombre, duracion, fecha };
     
@@ -242,30 +240,23 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
         selectedCard.innerHTML += '<div class="event-badge-selected">SELECCIONADO</div>';
     }
 
-    alert('Buscando ticket existente...');
     const ticketExistente = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
-    alert('Ticket existente: ' + JSON.stringify(ticketExistente));
     
     if (ticketExistente && ticketExistente.id) {
         currentTicket = ticketExistente;
-        alert('Ticket cargado: ' + currentTicket.id);
         if (ticketExistente.asientos) {
             selectedSeats = ticketExistente.asientos.split(',').map(s => s.trim()).filter(s => s);
         } else {
             selectedSeats = [];
         }
     } else {
-        alert('Creando nuevo ticket...');
         const result = await crearTicket(usuarioID, '', eventoId, fecha, duracion);
-        alert('Resultado crearTicket: ' + JSON.stringify(result));
         if (result.data && result.data.id) {
             currentTicket = result.data;
             selectedSeats = [];
-            alert('Ticket creado con ID: ' + currentTicket.id);
         } else if (result.error) {
-            alert('Error al crear ticket: ' + result.error);
+            console.error('Error al crear ticket: ' + result.error);
         } else if (result.message) {
-            alert('Ticket actualizado: ' + result.message);
             const ticketActualizado = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
             if (ticketActualizado && ticketActualizado.id) {
                 currentTicket = ticketActualizado;
@@ -390,7 +381,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            alert('Pago procesado correctamente');
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardExpiry = document.getElementById('cardExpiry').value.split('/');
+            const cardCvc = document.getElementById('cardCvc').value;
+
+            if (!cardNumber || !cardExpiry[0] || !cardExpiry[1] || !cardCvc) {
+                alert('Por favor, rellena todos los datos de la tarjeta.');
+                btn.disabled = false;
+                btn.textContent = 'Confirmar Compra';
+                return;
+            }
+
+            const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(intentResult.clientSecret, {
+                payment_method: {
+                    card: {
+                        number: cardNumber,
+                        exp_month: parseInt(cardExpiry[0].trim()),
+                        exp_year: parseInt(cardExpiry[1].trim()),
+                        cvc: cardCvc,
+                    },
+                },
+            });
+
+            if (confirmError) {
+                alert('Error en el pago: ' + confirmError.message);
+                btn.disabled = false;
+                btn.textContent = 'Confirmar Compra';
+                return;
+            }
+
+            if (paymentIntent.status !== 'succeeded') {
+                alert('El pago no se completó. Estado: ' + paymentIntent.status);
+                btn.disabled = false;
+                btn.textContent = 'Confirmar Compra';
+                return;
+            }
 
             if (currentTicket && currentTicket.id) {
                 const ticketResult = await actualizarTicket(
@@ -439,6 +464,7 @@ const logoutBtn = document.querySelector('.btn-primary');
 if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('usuarioId');
+        localStorage.removeItem('userRole');
         window.location.href = '/guest';
     });
 }

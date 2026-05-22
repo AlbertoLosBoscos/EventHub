@@ -19,7 +19,8 @@ formLogin.addEventListener('submit', async (e) => {
         const datos = await respuesta.json();
 
         if (respuesta.ok && datos?.user?.id) {
-            localStorage.setItem('usuarioId', datos.user.id); 
+            localStorage.setItem('usuarioId', datos.user.id);
+            if (datos.role) localStorage.setItem('userRole', datos.role);
             window.location.href = '/'; 
         } else {
             throw new Error(datos.mensaje || "Credenciales incorrectas o correo no verificado");

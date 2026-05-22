@@ -9,6 +9,7 @@ import rutaAnfiteatro from './routes/rutaAnfiteatro';
 import rutaPalco from './routes/rutaPalco';
 import rutaTicket from './routes/rutaTicket';
 import rutaPago from './routes/rutaPago';
+import { supabase } from './supabase';
 
 dotenv.config();
 
@@ -46,6 +47,30 @@ app.get('/guest', (req, res) => {
 
 app.get('/registro', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/register.html')); 
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/admin.html'));
+});
+
+app.post('/api/auth/verificar-admin', async (req, res) => {
+    const { usuarioId } = req.body;
+    if (!usuarioId) {
+        res.status(400).json({ admin: false });
+        return;
+    }
+    try {
+        const { data } = await supabase
+            .from('Auth_Users')
+            .select('rol')
+            .eq('id', usuarioId)
+            .maybeSingle();
+
+        const isAdmin = data?.rol === 'admin';
+        res.json({ admin: isAdmin });
+    } catch {
+        res.json({ admin: false });
+    }
 });
 
 const startServer = (port: number) => {

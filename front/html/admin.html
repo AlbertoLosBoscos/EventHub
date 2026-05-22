@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - EventHub</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Panel de Administración</h1>
+            <div class="admin-header-actions">
+                <span id="adminEmail"></span>
+                <button id="btnLogout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="admin-nav-btn active" data-section="crear">Añadir Evento</button>
+            <button class="admin-nav-btn" data-section="eliminar">Eliminar Evento</button>
+            <button class="admin-nav-btn" data-section="gestionar">Gestionar Evento</button>
+        </nav>
+
+        <main class="admin-main">
+            <section id="section-crear" class="admin-section active">
+                <h2>Añadir Evento</h2>
+                <form id="formCrearEvento">
+                    <label>Nombre <input type="text" id="inputNombre" required></label>
+                    <label>Descripción <textarea id="inputDescripcion"></textarea></label>
+                    <label>Sitio ID <input type="text" id="inputSitioID" required></label>
+                    <label>Fecha y hora <input type="datetime-local" id="inputFecha" required></label>
+                    <label>Compañía <input type="text" id="inputCompania"></label>
+                    <label>Duración (min) <input type="number" id="inputDuracion" required></label>
+                    <button type="submit">Crear Evento</button>
+                </form>
+                <div id="mensajeCrear" class="admin-mensaje"></div>
+            </section>
+
+            <section id="section-eliminar" class="admin-section">
+                <h2>Eliminar Evento</h2>
+                <p>Selecciona un evento para eliminarlo:</p>
+                <select id="selectEliminar"></select>
+                <button id="btnEliminar">Eliminar Evento</button>
+                <div id="mensajeEliminar" class="admin-mensaje"></div>
+            </section>
+
+            <section id="section-gestionar" class="admin-section">
+                <h2>Gestionar Evento</h2>
+                <p>Selecciona un evento para editar:</p>
+                <select id="selectGestionar"></select>
+                <form id="formEditarEvento">
+                    <label>Nombre <input type="text" id="editNombre" required></label>
+                    <label>Descripción <textarea id="editDescripcion"></textarea></label>
+                    <label>Sitio ID <input type="text" id="editSitioID" required></label>
+                    <label>Fecha y hora <input type="datetime-local" id="editFecha" required></label>
+                    <label>Compañía <input type="text" id="editCompania"></label>
+                    <label>Duración (min) <input type="number" id="editDuracion" required></label>
+                    <button type="submit">Guardar Cambios</button>
+                </form>
+                <div id="mensajeGestionar" class="admin-mensaje"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>

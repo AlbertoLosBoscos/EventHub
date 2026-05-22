@@ -66,6 +66,49 @@ export const verDetalles = async (req: Request, res: Response) => {
     }
 }
 
+export const actualizarEvento = async (req: Request, res: Response) => {
+    const { eventoID } = req.params;
+    const { nombre, descripcion, sitioID, fecha, compania, duracion } = req.body;
+    if (!eventoID) {
+        res.status(400).json({ error: 'Falta el ID del evento' });
+        return;
+    }
+    try {
+        const { data, error } = await supabase
+            .from(tablaEvento)
+            .update({ nombre, descripcion, sitioID, fecha, compania, duracion })
+            .eq('id', eventoID)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json({ message: 'Evento actualizado con éxito', data });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const eliminarEvento = async (req: Request, res: Response) => {
+    const { eventoID } = req.params;
+    if (!eventoID) {
+        res.status(400).json({ error: 'Falta el ID del evento' });
+        return;
+    }
+    try {
+        const { error } = await supabase
+            .from(tablaEvento)
+            .delete()
+            .eq('id', eventoID);
+
+        if (error) throw error;
+
+        res.json({ message: 'Evento eliminado con éxito' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export const verEventosPorFecha = async (req: Request, res: Response) => {
     const { fecha } = req.query;
     
