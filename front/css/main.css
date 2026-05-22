@@ -657,6 +657,12 @@ body {
     gap: 1rem;
 }
 
+.card-error {
+    color: #dc2626;
+    font-size: 0.8125rem;
+    display: none;
+}
+
 .btn-buy {
     width: 100%;
     background-color: var(--primary);

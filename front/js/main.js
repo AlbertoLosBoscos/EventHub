@@ -11,6 +11,7 @@ let currentDate = null;
 let occupiedSeats = [];
 let stripe = null;
 let stripePublicKey = null;
+let cardElements = null;
 
 const API_BASE = 'http://localhost:3000/api';
 
@@ -58,6 +59,29 @@ async function fetchStripeKey() {
         const data = await response.json();
         stripePublicKey = data.publicKey;
         stripe = Stripe(stripePublicKey);
+
+        const elements = stripe.elements();
+        const style = {
+            base: {
+                fontSize: '14px',
+                fontFamily: "'Inter', sans-serif",
+                color: '#1c1b1c',
+                '::placeholder': { color: '#7a7579' },
+            },
+        };
+        const cardEl = elements.create('card', { style });
+        cardEl.mount('#card-element');
+        cardEl.on('change', ({ error }) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+                displayError.style.display = 'block';
+            } else {
+                displayError.textContent = '';
+                displayError.style.display = 'none';
+            }
+        });
+        cardElements = cardEl;
     } catch (error) {
         console.error('Error al cargar Stripe:', error);
     }
@@ -355,25 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (step4) step4.classList.add('hidden');
     });
 
-    const cardNumberInput = document.getElementById('cardNumber');
-    const cardExpiryInput = document.getElementById('cardExpiry');
-
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', () => {
-            cardNumberInput.value = cardNumberInput.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
-        });
-    }
-
-    if (cardExpiryInput) {
-        cardExpiryInput.addEventListener('input', () => {
-            let val = cardExpiryInput.value.replace(/\D/g, '');
-            if (val.length >= 2) {
-                val = val.substring(0, 2) + '/' + val.substring(2, 4);
-            }
-            cardExpiryInput.value = val;
-        });
-    }
-
     const confirmBtns = document.querySelectorAll('#confirmPurchase');
     confirmBtns.forEach(confirmBtn => {
         confirmBtn.addEventListener('click', async (e) => {
@@ -399,15 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             btn.textContent = 'Procesando...';
 
-            console.log('Creando payment intent...');
             const intentResult = await crearPaymentIntent(
                 total,
                 selectedSeats.join(', '),
                 currentEvent.eventoId,
                 localStorage.getItem('usuarioId')
             );
-
-            console.log('intentResult:', intentResult);
 
             if (intentResult.error) {
                 alert('Error: ' + intentResult.error);
@@ -416,26 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            const cardExpiry = document.getElementById('cardExpiry').value.split('/');
-            const cardCvc = document.getElementById('cardCvc').value;
-
-            if (!cardNumber || !cardExpiry[0] || !cardExpiry[1] || !cardCvc) {
-                alert('Por favor, rellena todos los datos de la tarjeta.');
-                btn.disabled = false;
-                btn.textContent = 'Confirmar Compra';
-                return;
-            }
-
             const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(intentResult.clientSecret, {
                 payment_method: {
-                    card: {
-                        number: cardNumber,
-                        exp_month: parseInt(cardExpiry[0].trim()),
-                        exp_year: parseInt(cardExpiry[1].trim()),
-                        cvc: cardCvc,
-                    },
-                },
+                    card: cardElements,
+                }
             });
 
             if (confirmError) {

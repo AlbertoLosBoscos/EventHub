@@ -109,18 +109,6 @@
                     <p class="seat-note">Selecciona los asientos haciendo clic en los disponibles.</p>
                 </section>
 
-                <section class="checkout-section hidden" id="step4">
-                    <div class="checkout-form">
-                        <h2 class="checkout-title">Datos de Pago</h2>
-                        <input type="text" id="cardNumber" placeholder="Número de tarjeta" class="form-input">
-                        <div class="form-row">
-                            <input type="text" id="cardExpiry" placeholder="MM / YY" class="form-input">
-                            <input type="text" id="cardCvc" placeholder="CVC" class="form-input">
-                        </div>
-                        <button class="btn-buy" id="confirmPurchase">Confirmar Compra</button>
-                        <p class="secure-note">🔒 Conexión segura vía Stripe API</p>
-                    </div>
-                </section>
             </div>
 
             <aside class="sidebar">
@@ -156,11 +144,8 @@
                     </div>
 
                     <div class="checkout-form">
-                        <input type="text" id="cardNumber" placeholder="Número de tarjeta" class="form-input">
-                        <div class="form-row">
-                            <input type="text" id="cardExpiry" placeholder="MM / YY" class="form-input">
-                            <input type="text" id="cardCvc" placeholder="CVC" class="form-input">
-                        </div>
+                        <div id="card-element" class="form-input"></div>
+                        <div id="card-errors" class="card-error" role="alert"></div>
                         <button class="btn-buy" id="confirmPurchase">Confirmar Compra</button>
                         <p class="secure-note">🔒 Conexión segura vía Stripe API</p>
                     </div>
