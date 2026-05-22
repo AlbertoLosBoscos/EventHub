@@ -169,3 +169,157 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const buscarTickets = async (req: Request, res: Response) => {
+    const { ticketID, email } = req.query;
+
+    try {
+        let query = supabase.from(tablaTicket).select('*');
+
+        if (ticketID) {
+            query = query.eq('id', ticketID as string);
+        }
+
+        if (email) {
+            const { data: usuarios } = await supabase
+                .from('Auth_Users')
+                .select('id')
+                .eq('email', email as string);
+
+            if (usuarios && usuarios.length > 0) {
+                const ids = usuarios.map(u => u.id);
+                query = query.in('usuarioID', ids);
+            } else {
+                res.json([]);
+                return;
+            }
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const devolverEntradaCliente = async (req: Request, res: Response) => {
+    const { ticketID } = req.body;
+    if (!ticketID) {
+        res.status(400).json({ error: 'Falta el ID del ticket' });
+        return;
+    }
+    try {
+        const { error } = await supabase
+            .from(tablaTicket)
+            .delete()
+            .eq('id', ticketID);
+
+        if (error) throw error;
+
+        res.json({ message: 'Entrada devuelta con éxito' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const devolverEntradaEmpleado = async (req: Request, res: Response) => {
+    const { ticketID, email } = req.body;
+    if (!ticketID || !email) {
+        res.status(400).json({ error: 'Faltan el ID del ticket o el email del cliente' });
+        return;
+    }
+    try {
+        const { data: ticket, error: findError } = await supabase
+            .from(tablaTicket)
+            .select('id, usuarioID')
+            .eq('id', ticketID)
+            .maybeSingle();
+
+        if (findError) throw findError;
+        if (!ticket) {
+            res.status(404).json({ error: 'Ticket no encontrado' });
+            return;
+        }
+
+        const { error } = await supabase
+            .from(tablaTicket)
+            .delete()
+            .eq('id', ticketID);
+
+        if (error) throw error;
+
+        res.json({ message: 'Entrada devuelta por el empleado con éxito' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const eliminarTicket = async (req: Request, res: Response) => {
+    try {
+        const cincoMinutosAtras = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+        const { data: ticketsExpirados, error: findError } = await supabase
+            .from(tablaTicket)
+            .select('id')
+            .eq('confirmado', false)
+            .lt('created_at', cincoMinutosAtras);
+
+        if (findError) throw findError;
+
+        if (!ticketsExpirados || ticketsExpirados.length === 0) {
+            if (req) {
+                res.json({ message: 'No hay tickets expirados', eliminados: 0 });
+            }
+            return;
+        }
+
+        const ids = ticketsExpirados.map(t => t.id);
+
+        const { error: deleteError } = await supabase
+            .from(tablaTicket)
+            .delete()
+            .in('id', ids);
+
+        if (deleteError) throw deleteError;
+
+        if (req) {
+            res.json({ message: 'Tickets expirados eliminados', eliminados: ids.length });
+        }
+    } catch (error: any) {
+        if (req) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+}
+
+export const eliminarTicketsExpiradosCron = async () => {
+    try {
+        const cincoMinutosAtras = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+        const { data: ticketsExpirados, error: findError } = await supabase
+            .from(tablaTicket)
+            .select('id')
+            .eq('confirmado', false)
+            .lt('created_at', cincoMinutosAtras);
+
+        if (findError) throw findError;
+        if (!ticketsExpirados || ticketsExpirados.length === 0) return;
+
+        const ids = ticketsExpirados.map(t => t.id);
+
+        const { error: deleteError } = await supabase
+            .from(tablaTicket)
+            .delete()
+            .in('id', ids);
+
+        if (deleteError) throw deleteError;
+
+        console.log(`[Cron] Eliminados ${ids.length} tickets expirados`);
+    } catch (error: any) {
+        console.error('[Cron] Error al eliminar tickets expirados:', error.message);
+    }
+}
+

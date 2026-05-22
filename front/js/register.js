@@ -3,7 +3,7 @@ const mensajeError = document.getElementById('mensajeError');
 const btnLogin = document.getElementById('btnLogin');
 
 btnLogin.addEventListener('click', () => {
-    window.location.href = '/'; 
+    window.location.href = '/login'; 
 });
 
 formRegistro.addEventListener('submit', async (e) => {
@@ -24,7 +24,7 @@ formRegistro.addEventListener('submit', async (e) => {
 
         if (respuesta.ok) {
             alert('Usuario registrado con éxito. Ahora puedes iniciar sesión.');
-            window.location.href = '/'; 
+            window.location.href = '/login'; 
         } else {
             throw new Error(datos.error || datos.mensaje || "Error al registrarse");
         }

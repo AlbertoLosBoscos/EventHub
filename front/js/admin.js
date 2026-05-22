@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (userRole !== 'admin') {
+    if (userRole !== 'admin' && userRole !== 'employee') {
         fetch(`${API_BASE}/auth/verificar-admin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -26,10 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('adminEmail').textContent = usuarioId;
 
-    document.getElementById('btnLogout').addEventListener('click', () => {
-        localStorage.removeItem('usuarioId');
-        localStorage.removeItem('userRole');
-        window.location.href = '/login';
+    document.getElementById('btnVolver').addEventListener('click', () => {
+        window.location.href = '/main';
     });
 
     document.querySelectorAll('.admin-nav-btn').forEach(btn => {
@@ -40,6 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('section-' + btn.dataset.section).classList.add('active');
         });
     });
+
+    if (userRole === 'employee') {
+        document.querySelectorAll('.admin-nav-btn[data-section="crear"], .admin-nav-btn[data-section="eliminar"]').forEach(btn => {
+            btn.style.display = 'none';
+        });
+        document.querySelector('.admin-nav-btn[data-section="gestionar"]')?.classList.add('active');
+        document.getElementById('section-gestionar')?.classList.add('active');
+        document.getElementById('section-crear')?.classList.remove('active');
+        document.getElementById('section-eliminar')?.classList.remove('active');
+    }
 
     cargarEventosSelect('selectEliminar');
     cargarEventosSelect('selectGestionar');

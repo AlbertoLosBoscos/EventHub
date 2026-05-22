@@ -10,6 +10,7 @@ import rutaPalco from './routes/rutaPalco';
 import rutaTicket from './routes/rutaTicket';
 import rutaPago from './routes/rutaPago';
 import { supabase } from './supabase';
+import { eliminarTicketsExpiradosCron } from './controllers/gestores/ControlTicket';
 
 dotenv.config();
 
@@ -34,6 +35,10 @@ app.get('/config/stripe-key', (req, res) => {
 app.use(express.static(path.join(__dirname, '../front'))); 
 
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/guest.html'));
+});
+
+app.get('/main', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/main.html'));
 });
 
@@ -66,7 +71,7 @@ app.post('/api/auth/verificar-admin', async (req, res) => {
             .eq('id', usuarioId)
             .maybeSingle();
 
-        const isAdmin = data?.rol === 'admin';
+        const isAdmin = data?.rol === 'admin' || data?.rol === 'employee';
         res.json({ admin: isAdmin });
     } catch {
         res.json({ admin: false });
@@ -86,6 +91,9 @@ const startServer = (port: number) => {
             console.error('Error al iniciar el servidor:', err);
         }
     });
+
+    setInterval(eliminarTicketsExpiradosCron, 3 * 60 * 1000);
+    console.log('[Cron] Limpieza de tickets expirados cada 3 minutos');
 };
 
 startServer(Number(PORT));

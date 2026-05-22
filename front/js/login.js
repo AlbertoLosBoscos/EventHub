@@ -3,6 +3,7 @@ const mensajeError = document.getElementById('mensajeError');
 const btnRegistro = document.getElementById('btnRegistro');
 const btnGitHub = document.getElementById('btnGitHub');
 const btnMagicLink = document.getElementById('btnMagicLink');
+const btnSalir = document.getElementById('btnSalir');
 
 formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ formLogin.addEventListener('submit', async (e) => {
         if (respuesta.ok && datos?.user?.id) {
             localStorage.setItem('usuarioId', datos.user.id);
             if (datos.role) localStorage.setItem('userRole', datos.role);
-            window.location.href = '/'; 
+            window.location.href = '/main'; 
         } else {
             throw new Error(datos.mensaje || "Credenciales incorrectas o correo no verificado");
         }
@@ -42,6 +43,10 @@ btnGitHub.addEventListener('click', () => {
 
 btnGoogle.addEventListener('click', () => {
     window.location.href = 'http://localhost:3000/api/auth/login/google';
+});
+
+btnSalir.addEventListener('click', () => {
+    window.location.href = '/guest';
 });
 
 btnMagicLink.addEventListener('click', async () => {
@@ -90,7 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 if (uid) {
                     localStorage.setItem('usuarioId', uid); 
-                    window.location.href = '/';
+                    window.location.href = '/main';
                 }
             } catch (e) {
                 console.error("Error al decodificar el token de acceso:", e);
