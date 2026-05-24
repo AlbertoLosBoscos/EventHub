@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { stripe } from '../../stripe';
+import { stripe } from '../stripe';
 
 export const crearPaymentIntent = async (req: Request, res: Response) => {
     const { cantidad, asientos, eventoId, usuarioId } = req.body;

@@ -49,8 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('section-eliminar')?.classList.remove('active');
     }
 
-    cargarEventosSelect('selectEliminar');
-    cargarEventosSelect('selectGestionar');
+    cargarEventosSelect('selectEliminar', true, true);
+    cargarEventosSelect('selectGestionar', true, true);
+    cargarSitiosSelect('inputSitioID');
+    cargarSitiosSelect('editSitioID');
 
     document.getElementById('formCrearEvento').addEventListener('submit', crearEvento);
     document.getElementById('btnEliminar').addEventListener('click', eliminarEvento);
@@ -64,20 +66,50 @@ function mostrarMensaje(id, texto, tipo) {
     el.className = 'admin-mensaje ' + tipo;
 }
 
-async function cargarEventosSelect(selectId) {
+async function cargarEventosSelect(selectId, mostrarSitio, futurosOnly) {
     try {
-        const r = await fetch(`${API_BASE}/eventos/mostrar`);
-        const eventos = await r.json();
+        const [rEventos, rSitios] = await Promise.all([
+            fetch(`${API_BASE}/eventos/mostrar`),
+            mostrarSitio ? fetch(`${API_BASE}/sitios/mostrar`) : Promise.resolve(null)
+        ]);
+        let eventos = await rEventos.json();
+        let sitiosMap = {};
+        if (rSitios) {
+            const sitios = await rSitios.json();
+            (sitios || []).forEach(s => { sitiosMap[s.id] = s.nombre; });
+        }
+        if (futurosOnly) {
+            const ahora = new Date();
+            eventos = (eventos || []).filter(ev => new Date(ev.fecha) > ahora);
+        }
         const select = document.getElementById(selectId);
         select.innerHTML = '<option value="">-- Selecciona un evento --</option>';
-        eventos.forEach(ev => {
+        (eventos || []).forEach(ev => {
             const opt = document.createElement('option');
             opt.value = ev.id;
-            opt.textContent = `${ev.nombre} (${new Date(ev.fecha).toLocaleDateString()})`;
+            const sitioTexto = sitiosMap[ev.sitioID] ? ' - ' + sitiosMap[ev.sitioID] : '';
+            opt.textContent = `${ev.nombre} (${new Date(ev.fecha).toLocaleDateString()})${sitioTexto}`;
             select.appendChild(opt);
         });
     } catch (e) {
         console.error('Error al cargar eventos:', e);
+    }
+}
+
+async function cargarSitiosSelect(selectId) {
+    try {
+        const r = await fetch(`${API_BASE}/sitios/mostrar`);
+        const sitios = await r.json();
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">-- Selecciona un sitio --</option>';
+        sitios.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.nombre;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error('Error al cargar sitios:', e);
     }
 }
 
@@ -102,8 +134,8 @@ async function crearEvento(e) {
         if (r.ok) {
             mostrarMensaje('mensajeCrear', 'Evento creado con éxito', 'success');
             document.getElementById('formCrearEvento').reset();
-            cargarEventosSelect('selectEliminar');
-            cargarEventosSelect('selectGestionar');
+            cargarEventosSelect('selectEliminar', true, true);
+            cargarEventosSelect('selectGestionar', true);
         } else {
             mostrarMensaje('mensajeCrear', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
@@ -125,8 +157,8 @@ async function eliminarEvento() {
         const data = await r.json();
         if (r.ok) {
             mostrarMensaje('mensajeEliminar', 'Evento eliminado con éxito', 'success');
-            cargarEventosSelect('selectEliminar');
-            cargarEventosSelect('selectGestionar');
+            cargarEventosSelect('selectEliminar', true, true);
+            cargarEventosSelect('selectGestionar', true);
         } else {
             mostrarMensaje('mensajeEliminar', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
@@ -181,8 +213,8 @@ async function guardarEdicion(e) {
         const data = await r.json();
         if (r.ok) {
             mostrarMensaje('mensajeGestionar', 'Evento actualizado con éxito', 'success');
-            cargarEventosSelect('selectEliminar');
-            cargarEventosSelect('selectGestionar');
+            cargarEventosSelect('selectEliminar', true, true);
+            cargarEventosSelect('selectGestionar', true);
         } else {
             mostrarMensaje('mensajeGestionar', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
