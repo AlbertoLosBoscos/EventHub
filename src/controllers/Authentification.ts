@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
 import { supabase } from '../supabase'; 
 import rateLimit from 'express-rate-limit';
+import { createClient } from '@supabase/supabase-js';
 
 const localhost = process.env.LOCAL_HOST || '';
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const serviceKey = process.env.SUPABASE_API_EVENTHUB || '';
+
+const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
 export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
@@ -99,4 +104,75 @@ export const magicLink = async (req: Request, res: Response) => {
 
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ mensaje: "¡Enlace enviado! Revisa tu correo." });
+};
+
+export const listarUsuarios = async (req: Request, res: Response) => {
+    try {
+        const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+        if (authError) throw authError;
+
+        const { data: customData } = await supabase
+            .from('Auth_Users')
+            .select('*');
+
+        const customMap = new Map();
+        (customData || []).forEach(u => customMap.set(u.id, u));
+
+        const usuarios = (authUsers.users || []).map(u => {
+            const custom = customMap.get(u.id) || {};
+            return {
+                id: u.id,
+                email: u.email,
+                created_at: u.created_at,
+                rol: custom.rol || 'client',
+                baneado: custom.baneado || false
+            };
+        });
+
+        res.json(usuarios);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const actualizarRol = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { rol } = req.body;
+    if (!rol || !['client', 'employee', 'admin'].includes(rol)) {
+        res.status(400).json({ error: 'Rol inválido' });
+        return;
+    }
+    try {
+        const { data, error } = await supabase
+            .from('Auth_Users')
+            .upsert({ id, rol }, { onConflict: 'id' })
+            .select()
+            .single();
+        if (error) throw error;
+        res.json({ message: 'Rol actualizado', data });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const toggleBan = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        const { data: current } = await supabase
+            .from('Auth_Users')
+            .select('baneado')
+            .eq('id', id)
+            .maybeSingle();
+
+        const nuevoBaneado = !current?.baneado;
+        const { data, error } = await supabase
+            .from('Auth_Users')
+            .upsert({ id, baneado: nuevoBaneado }, { onConflict: 'id' })
+            .select()
+            .single();
+        if (error) throw error;
+        res.json({ message: nuevoBaneado ? 'Usuario baneado' : 'Usuario desbaneado', data });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
 };

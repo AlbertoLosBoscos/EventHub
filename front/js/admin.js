@@ -36,17 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('section-' + btn.dataset.section).classList.add('active');
+            if (btn.dataset.section === 'usuarios') cargarUsuarios();
         });
     });
 
     if (userRole === 'employee') {
-        document.querySelectorAll('.admin-nav-btn[data-section="crear"], .admin-nav-btn[data-section="eliminar"]').forEach(btn => {
+        document.querySelectorAll('.admin-nav-btn[data-section="crear"], .admin-nav-btn[data-section="eliminar"], .admin-nav-btn[data-section="usuarios"]').forEach(btn => {
             btn.style.display = 'none';
         });
         document.querySelector('.admin-nav-btn[data-section="gestionar"]')?.classList.add('active');
         document.getElementById('section-gestionar')?.classList.add('active');
         document.getElementById('section-crear')?.classList.remove('active');
         document.getElementById('section-eliminar')?.classList.remove('active');
+        document.getElementById('section-usuarios')?.classList.remove('active');
     }
 
     cargarEventosSelect('selectEliminar', true, true);
@@ -58,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnEliminar').addEventListener('click', eliminarEvento);
     document.getElementById('selectGestionar').addEventListener('change', cargarEventoEnFormulario);
     document.getElementById('formEditarEvento').addEventListener('submit', guardarEdicion);
+
+    cargarUsuarios();
 });
 
 function mostrarMensaje(id, texto, tipo) {
@@ -135,7 +139,7 @@ async function crearEvento(e) {
             mostrarMensaje('mensajeCrear', 'Evento creado con éxito', 'success');
             document.getElementById('formCrearEvento').reset();
             cargarEventosSelect('selectEliminar', true, true);
-            cargarEventosSelect('selectGestionar', true);
+            cargarEventosSelect('selectGestionar', true, true);
         } else {
             mostrarMensaje('mensajeCrear', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
@@ -158,7 +162,7 @@ async function eliminarEvento() {
         if (r.ok) {
             mostrarMensaje('mensajeEliminar', 'Evento eliminado con éxito', 'success');
             cargarEventosSelect('selectEliminar', true, true);
-            cargarEventosSelect('selectGestionar', true);
+            cargarEventosSelect('selectGestionar', true, true);
         } else {
             mostrarMensaje('mensajeEliminar', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
@@ -214,11 +218,78 @@ async function guardarEdicion(e) {
         if (r.ok) {
             mostrarMensaje('mensajeGestionar', 'Evento actualizado con éxito', 'success');
             cargarEventosSelect('selectEliminar', true, true);
-            cargarEventosSelect('selectGestionar', true);
+            cargarEventosSelect('selectGestionar', true, true);
         } else {
             mostrarMensaje('mensajeGestionar', 'Error: ' + (data.error || 'desconocido'), 'error');
         }
     } catch (err) {
         mostrarMensaje('mensajeGestionar', 'Error de conexión', 'error');
+    }
+}
+
+async function cargarUsuarios() {
+    try {
+        const r = await fetch(`${API_BASE}/auth/usuarios`);
+        const usuarios = await r.json();
+        const container = document.getElementById('usuariosList');
+        container.innerHTML = '';
+
+        usuarios.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+                <div class="user-card-info">
+                    <p><strong>ID:</strong> ${u.id}</p>
+                    <p><strong>Email:</strong> ${u.email || '-'}</p>
+                    <p><strong>Registrado:</strong> ${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</p>
+                    <p><strong>Rol:</strong> <span id="rol-${u.id}">${u.rol}</span></p>
+                    <p><strong>Baneado:</strong> <span id="ban-${u.id}">${u.baneado ? 'Sí' : 'No'}</span></p>
+                </div>
+                <div class="user-card-actions">
+                    <div>
+                        <select id="rolSelect-${u.id}" data-id="${u.id}">
+                            <option value="client" ${u.rol === 'client' ? 'selected' : ''}>Client</option>
+                            <option value="employee" ${u.rol === 'employee' ? 'selected' : ''}>Employee</option>
+                            <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </div>
+                    <button class="${u.baneado ? 'btn-unban' : 'btn-ban'}" data-id="${u.id}">
+                        ${u.baneado ? 'Desbanear' : 'Banear'}
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        container.querySelectorAll('[id^="rolSelect-"]').forEach(sel => {
+            sel.addEventListener('change', async () => {
+                const id = sel.dataset.id;
+                const rol = sel.value;
+                try {
+                    await fetch(`${API_BASE}/auth/usuarios/${id}/rol`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rol }),
+                    });
+                    document.getElementById(`rol-${id}`).textContent = rol;
+                } catch {}
+            });
+        });
+
+        container.querySelectorAll('.btn-ban, .btn-unban').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                try {
+                    const r = await fetch(`${API_BASE}/auth/usuarios/${id}/ban`, {
+                        method: 'PUT',
+                    });
+                    if (r.ok) {
+                        cargarUsuarios();
+                    }
+                } catch {}
+            });
+        });
+    } catch (e) {
+        document.getElementById('usuariosList').innerHTML = '<p>Error al cargar usuarios</p>';
     }
 }
