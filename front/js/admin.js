@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (userRole === 'employee') {
-        document.querySelectorAll('.admin-nav-btn[data-section="crear"], .admin-nav-btn[data-section="eliminar"], .admin-nav-btn[data-section="usuarios"]').forEach(btn => {
+        document.querySelectorAll('.admin-nav-btn[data-section="crear"], .admin-nav-btn[data-section="crear-sitio"], .admin-nav-btn[data-section="eliminar"], .admin-nav-btn[data-section="usuarios"]').forEach(btn => {
             btn.style.display = 'none';
         });
         document.querySelector('.admin-nav-btn[data-section="gestionar"]')?.classList.add('active');
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnEliminar').addEventListener('click', eliminarEvento);
     document.getElementById('selectGestionar').addEventListener('change', cargarEventoEnFormulario);
     document.getElementById('formEditarEvento').addEventListener('submit', guardarEdicion);
+    document.getElementById('formCrearSitio').addEventListener('submit', crearSitio);
 
     cargarUsuarios();
 });
@@ -224,6 +225,33 @@ async function guardarEdicion(e) {
         }
     } catch (err) {
         mostrarMensaje('mensajeGestionar', 'Error de conexión', 'error');
+    }
+}
+
+async function crearSitio(e) {
+    e.preventDefault();
+    const body = {
+        nombre: document.getElementById('inputSitioNombre').value,
+        aforo: parseInt(document.getElementById('inputSitioAforo').value),
+        anfiteatrosID: document.getElementById('inputSitioAnfiteatro').value || null,
+    };
+    try {
+        const r = await fetch(`${API_BASE}/sitios/crear`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const data = await r.json();
+        if (r.ok) {
+            mostrarMensaje('mensajeCrearSitio', 'Sitio creado con éxito', 'success');
+            document.getElementById('formCrearSitio').reset();
+            cargarSitiosSelect('inputSitioID');
+            cargarSitiosSelect('editSitioID');
+        } else {
+            mostrarMensaje('mensajeCrearSitio', 'Error: ' + (data.error || 'desconocido'), 'error');
+        }
+    } catch (err) {
+        mostrarMensaje('mensajeCrearSitio', 'Error de conexión', 'error');
     }
 }
 

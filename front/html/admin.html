@@ -18,6 +18,7 @@
 
         <nav class="admin-nav">
             <button class="admin-nav-btn active" data-section="crear">Añadir Evento</button>
+            <button class="admin-nav-btn" data-section="crear-sitio">Añadir Sitio</button>
             <button class="admin-nav-btn" data-section="eliminar">Eliminar Evento</button>
             <button class="admin-nav-btn" data-section="gestionar">Gestionar Evento</button>
             <button class="admin-nav-btn" data-section="usuarios">Gestionar Usuarios</button>
@@ -36,6 +37,17 @@
                     <button type="submit">Crear Evento</button>
                 </form>
                 <div id="mensajeCrear" class="admin-mensaje"></div>
+            </section>
+
+            <section id="section-crear-sitio" class="admin-section">
+                <h2>Añadir Sitio</h2>
+                <form id="formCrearSitio">
+                    <label>Nombre <input type="text" id="inputSitioNombre" required></label>
+                    <label>Aforo <input type="number" id="inputSitioAforo" required></label>
+                    <label>ID del Anfiteatro <input type="text" id="inputSitioAnfiteatro"></label>
+                    <button type="submit">Crear Sitio</button>
+                </form>
+                <div id="mensajeCrearSitio" class="admin-mensaje"></div>
             </section>
 
             <section id="section-eliminar" class="admin-section">
