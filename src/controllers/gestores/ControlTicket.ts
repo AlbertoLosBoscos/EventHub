@@ -1,7 +1,29 @@
 import { Request, Response } from 'express';
-import {supabase} from '../../supabase'
+import {supabase, supabaseAdmin} from '../../supabase'
 
 const tablaTicket = 'BDTicket';
+
+async function enrichTickets(tickets: any[]) {
+    if (!tickets || tickets.length === 0) return tickets;
+
+    const eventosIds = [...new Set(tickets.map(t => t.eventoID).filter(Boolean))];
+
+    const [eventosRes, usersRes] = await Promise.all([
+        eventosIds.length > 0
+            ? supabase.from('BDEventos').select('id, nombre').in('id', eventosIds)
+            : { data: [] },
+        supabaseAdmin.auth.admin.listUsers(),
+    ]);
+
+    const eventosMap = new Map((eventosRes.data || []).map((e: any) => [e.id, e.nombre]));
+    const usuariosMap = new Map((usersRes.data?.users || []).map((u: any) => [u.id, u.email]));
+
+    return tickets.map((t: any) => ({
+        ...t,
+        eventoNombre: eventosMap.get(t.eventoID) || null,
+        usuarioEmail: usuariosMap.get(t.usuarioID) || null,
+    }));
+}
 
 export const verTickets = async (req: Request, res: Response) => {
     try {
@@ -31,7 +53,8 @@ export const verTicketsPorUsuario = async (req: Request, res: Response) => {
 
         if (error) throw error;
 
-        res.json(data);
+        const enriched = await enrichTickets(data);
+        res.json(enriched);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -189,32 +212,40 @@ export const buscarTickets = async (req: Request, res: Response) => {
     const { ticketID, email } = req.query;
 
     try {
-        let query = supabase.from(tablaTicket).select('*');
-
-        if (ticketID) {
-            query = query.eq('id', ticketID as string);
-        }
+        let usuarioIds: string[] | null = null;
 
         if (email) {
-            const { data: usuarios } = await supabase
-                .from('Auth_Users')
-                .select('id')
-                .eq('email', email as string);
-
-            if (usuarios && usuarios.length > 0) {
-                const ids = usuarios.map(u => u.id);
-                query = query.in('usuarioID', ids);
-            } else {
+            const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
+            const users = usersData?.users || [];
+            const matched = users.filter((u: any) => u.email === email);
+            if (matched.length === 0) {
                 res.json([]);
                 return;
             }
+            usuarioIds = matched.map((u: any) => u.id);
+        }
+
+        let query = supabase.from(tablaTicket).select('*');
+
+        if (usuarioIds) {
+            query = query.in('usuarioID', usuarioIds);
         }
 
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        res.json(data);
+        let resultados = data || [];
+
+        if (ticketID) {
+            const prefix = (ticketID as string).toLowerCase();
+            resultados = resultados.filter((t: any) =>
+                t.id && t.id.toLowerCase().startsWith(prefix)
+            );
+        }
+
+        const enriched = await enrichTickets(resultados);
+        res.json(enriched);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

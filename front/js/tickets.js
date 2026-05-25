@@ -72,10 +72,12 @@ async function cargarMisTickets() {
 
             card.innerHTML = `
                 <div class="ticket-info">
-                    <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
-                    <p>Asientos: ${ticket.asientos || 'Ninguno'}</p>
-                    <p>Fecha: ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p>Estado: ✅ Confirmado</p>
+                    <h3>Ticket: ${ticket.id}</h3>
+                    <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
+                    <p><strong>Email:</strong> ${ticket.usuarioEmail || '-'}</p>
+                    <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
+                    <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
+                    <p><strong>Estado:</strong> ✅ Confirmado</p>
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
@@ -152,12 +154,12 @@ async function cargarTodosTickets() {
 
             card.innerHTML = `
                 <div class="ticket-info">
-                    <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
-                    <p>ID: ${ticket.id}</p>
-                    <p>Usuario: ${ticket.usuarioID || '-'}</p>
-                    <p>Asientos: ${ticket.asientos || 'Ninguno'}</p>
-                    <p>Fecha: ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p>Estado: ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
+                    <h3>Ticket: ${ticket.id}</h3>
+                    <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
+                    <p><strong>Email:</strong> ${ticket.usuarioEmail || ticket.usuarioID || '-'}</p>
+                    <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
+                    <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
+                    <p><strong>Estado:</strong> ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
@@ -208,7 +210,10 @@ function mostrarDetalleTicket(ticket) {
         <div class="ticket-detalle-content">
             <h3>Detalle del Ticket</h3>
             <p><strong>ID:</strong> ${ticket.id}</p>
+            <p><strong>Evento:</strong> ${ticket.eventoNombre || '-'}</p>
             <p><strong>Evento ID:</strong> ${ticket.eventoID || '-'}</p>
+            <p><strong>Email:</strong> ${ticket.usuarioEmail || '-'}</p>
+            <p><strong>Usuario ID:</strong> ${ticket.usuarioID || '-'}</p>
             <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
             <p><strong>Fecha evento:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</p>
             <p><strong>Duración:</strong> ${ticket.duracion || '-'} min</p>
