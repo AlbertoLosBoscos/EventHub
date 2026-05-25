@@ -9,6 +9,7 @@ import rutaAnfiteatro from './routes/rutaAnfiteatro';
 import rutaPalco from './routes/rutaPalco';
 import rutaTicket from './routes/rutaTicket';
 import rutaPago from './routes/rutaPago';
+import rutaUpload from './routes/rutaUpload';
 import { supabase } from './supabase';
 import { eliminarTicketsExpiradosCron } from './controllers/gestores/ControlTicket';
 
@@ -26,6 +27,7 @@ app.use('/api/anfiteatros', rutaAnfiteatro);
 app.use('/api/palcos', rutaPalco);
 app.use('/api/tickets', rutaTicket);
 app.use('/api/pago', rutaPago);
+app.use('/api/upload', rutaUpload);
 
 
 app.get('/api/auth/callback', (req, res) => {

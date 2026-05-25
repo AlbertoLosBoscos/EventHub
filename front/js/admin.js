@@ -118,9 +118,33 @@ async function cargarSitiosSelect(selectId) {
     }
 }
 
+async function subirImagen(file) {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const r = await fetch(`${API_BASE}/upload/imagen-evento`, {
+        method: 'POST',
+        body: formData,
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al subir imagen');
+    return data.url;
+}
+
 async function crearEvento(e) {
     e.preventDefault();
     const fechaRaw = document.getElementById('inputFecha').value;
+    const fileInput = document.getElementById('inputImagen');
+    let imagenUrl = '';
+
+    if (fileInput.files.length > 0) {
+        try {
+            imagenUrl = await subirImagen(fileInput.files[0]);
+        } catch (err) {
+            mostrarMensaje('mensajeCrear', 'Error al subir imagen: ' + err.message, 'error');
+            return;
+        }
+    }
+
     const body = {
         nombre: document.getElementById('inputNombre').value,
         descripcion: document.getElementById('inputDescripcion').value,
@@ -128,6 +152,7 @@ async function crearEvento(e) {
         fecha: new Date(fechaRaw).toISOString(),
         compania: document.getElementById('inputCompania').value,
         duracion: parseInt(document.getElementById('inputDuracion').value),
+        imagen: imagenUrl || undefined,
     };
     try {
         const r = await fetch(`${API_BASE}/eventos/crear`, {
@@ -188,6 +213,13 @@ async function cargarEventoEnFormulario() {
         }
         document.getElementById('editCompania').value = ev.compania || '';
         document.getElementById('editDuracion').value = ev.duracion || '';
+
+        const preview = document.getElementById('editImagenPreview');
+        if (ev.imagen) {
+            preview.innerHTML = `<img src="${ev.imagen}" style="max-width:200px;max-height:120px;border-radius:6px;">`;
+        } else {
+            preview.innerHTML = '';
+        }
     } catch (e) {
         console.error('Error al cargar evento:', e);
     }
@@ -201,6 +233,18 @@ async function guardarEdicion(e) {
         return;
     }
     const fechaRaw = document.getElementById('editFecha').value;
+    const fileInput = document.getElementById('editImagen');
+    let imagenUrl = undefined;
+
+    if (fileInput.files.length > 0) {
+        try {
+            imagenUrl = await subirImagen(fileInput.files[0]);
+        } catch (err) {
+            mostrarMensaje('mensajeGestionar', 'Error al subir imagen: ' + err.message, 'error');
+            return;
+        }
+    }
+
     const body = {
         nombre: document.getElementById('editNombre').value,
         descripcion: document.getElementById('editDescripcion').value,
@@ -209,6 +253,8 @@ async function guardarEdicion(e) {
         compania: document.getElementById('editCompania').value,
         duracion: parseInt(document.getElementById('editDuracion').value),
     };
+    if (imagenUrl) body.imagen = imagenUrl;
+
     try {
         const r = await fetch(`${API_BASE}/eventos/actualizar/${eventoId}`, {
             method: 'PUT',
@@ -220,6 +266,7 @@ async function guardarEdicion(e) {
             mostrarMensaje('mensajeGestionar', 'Evento actualizado con éxito', 'success');
             cargarEventosSelect('selectEliminar', true, true);
             cargarEventosSelect('selectGestionar', true, true);
+            cargarEventoEnFormulario();
         } else {
             mostrarMensaje('mensajeGestionar', 'Error: ' + (data.error || 'desconocido'), 'error');
         }

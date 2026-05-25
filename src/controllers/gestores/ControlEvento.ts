@@ -16,7 +16,7 @@ export const verEventos = async (req: Request, res: Response) => {
 }
 
 export const crearEvento = async (req: Request, res: Response) => {
-    const {nombre, descripcion, sitioID, fecha, compania, duracion} = req.body;
+    const {nombre, descripcion, sitioID, fecha, compania, duracion, imagen} = req.body;
     if (!nombre  || !sitioID || !fecha || !duracion) {
         res.status(400).json({ error: 'Faltan campos requeridos' });
         return;
@@ -30,7 +30,8 @@ export const crearEvento = async (req: Request, res: Response) => {
                 sitioID, 
                 fecha, 
                 compania, 
-                duracion })
+                duracion,
+                imagen: imagen || null })
             .select()
             .single();
 
@@ -68,15 +69,18 @@ export const verDetalles = async (req: Request, res: Response) => {
 
 export const actualizarEvento = async (req: Request, res: Response) => {
     const { eventoID } = req.params;
-    const { nombre, descripcion, sitioID, fecha, compania, duracion } = req.body;
+    const { nombre, descripcion, sitioID, fecha, compania, duracion, imagen } = req.body;
     if (!eventoID) {
         res.status(400).json({ error: 'Falta el ID del evento' });
         return;
     }
     try {
+        const updateData: any = { nombre, descripcion, sitioID, fecha, compania, duracion };
+        if (imagen !== undefined) updateData.imagen = imagen;
+
         const { data, error } = await supabase
             .from(tablaEvento)
-            .update({ nombre, descripcion, sitioID, fecha, compania, duracion })
+            .update(updateData)
             .eq('id', eventoID)
             .select()
             .single();

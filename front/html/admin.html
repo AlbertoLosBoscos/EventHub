@@ -34,6 +34,7 @@
                     <label>Fecha y hora <input type="datetime-local" id="inputFecha" required></label>
                     <label>Compañía <input type="text" id="inputCompania"></label>
                     <label>Duración (min) <input type="number" id="inputDuracion" required></label>
+                    <label>Imagen <input type="file" id="inputImagen" accept="image/*"></label>
                     <button type="submit">Crear Evento</button>
                 </form>
                 <div id="mensajeCrear" class="admin-mensaje"></div>
@@ -69,6 +70,8 @@
                     <label>Fecha y hora <input type="datetime-local" id="editFecha" required></label>
                     <label>Compañía <input type="text" id="editCompania"></label>
                     <label>Duración (min) <input type="number" id="editDuracion" required></label>
+                    <label>Imagen <input type="file" id="editImagen" accept="image/*"></label>
+                    <div id="editImagenPreview" style="margin-bottom:10px"></div>
                     <button type="submit">Guardar Cambios</button>
                 </form>
                 <div id="mensajeGestionar" class="admin-mensaje"></div>
