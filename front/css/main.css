@@ -451,6 +451,11 @@ body {
     border-color: var(--surface-dim);
 }
 
+.legend-tus-compras {
+    background-color: #8CB4E0;
+    border-color: #8CB4E0;
+}
+
 .stage {
     text-align: center;
     margin-bottom: 3rem;
@@ -505,7 +510,7 @@ body {
     background-color: transparent;
 }
 
-.seat:hover:not(.seat-occupied):not(.seat-selected) {
+.seat:hover:not(.seat-occupied):not(.seat-selected):not(.seat-tus-compras) {
     border-color: var(--primary);
 }
 
@@ -518,6 +523,12 @@ body {
 .seat-occupied {
     background-color: var(--surface-dim);
     border-color: var(--surface-dim);
+    cursor: not-allowed;
+}
+
+.seat-tus-compras {
+    background-color: #8CB4E0;
+    border-color: #8CB4E0;
     cursor: not-allowed;
 }
 

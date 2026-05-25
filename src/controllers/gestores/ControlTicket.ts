@@ -157,21 +157,29 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
 
         if (error) throw error;
 
-        const listaOcupados = data
-            ? data
-                .filter(t => {
-                    if (t.confirmado) return true;
-                    if (usuarioID && t.usuarioID === usuarioID) return false;
-                    return true;
-                })
+        const parseSeats = (items: any[]) =>
+            items
                 .map((t: { asientos: string }) => t.asientos)
                 .join(', ')
                 .split(',')
                 .map((s: string) => s.trim())
-                .filter((s: string) => s !== '')
+                .filter((s: string) => s !== '');
+
+        const allTickets = data || [];
+
+        const tusCompras = usuarioID
+            ? parseSeats(allTickets.filter(t => t.confirmado && t.usuarioID === usuarioID))
             : [];
 
-        res.json(listaOcupados);
+        const ocupados = [...new Set(parseSeats(
+            allTickets.filter(t => {
+                if (t.confirmado && usuarioID && t.usuarioID === usuarioID) return false;
+                if (!t.confirmado && usuarioID && t.usuarioID === usuarioID) return false;
+                return true;
+            })
+        ))];
+
+        res.json({ ocupados, tusCompras });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

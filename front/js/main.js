@@ -9,6 +9,7 @@ let currentEvent = null;
 let currentTicket = null;
 let currentDate = null;
 let occupiedSeats = [];
+let misComprasSeats = [];
 let stripe = null;
 let stripePublicKey = null;
 let cardElements = null;
@@ -122,10 +123,14 @@ async function fetchAsientosOcupados(eventoID, usuarioID) {
         if (usuarioID) url += `&usuarioID=${usuarioID}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Error al obtener asientos ocupados');
-        return await response.json();
+        const data = await response.json();
+        return {
+            ocupados: data.ocupados || data || [],
+            tusCompras: data.tusCompras || [],
+        };
     } catch (error) {
         console.error('Error:', error);
-        return [];
+        return { ocupados: [], tusCompras: [] };
     }
 }
 
@@ -158,7 +163,9 @@ function generateSeatGrid() {
             seat.dataset.row = row;
             seat.dataset.col = COL_LABELS[col];
 
-            if (occupiedSeats.includes(seatId)) {
+            if (misComprasSeats.includes(seatId)) {
+                seat.classList.add('seat-tus-compras');
+            } else if (occupiedSeats.includes(seatId)) {
                 seat.classList.add('seat-occupied');
             } else {
                 seat.addEventListener('click', () => toggleSeat(seat, seatId));
@@ -170,7 +177,7 @@ function generateSeatGrid() {
 }
 
 function toggleSeat(seatElement, seatId) {
-    if (seatElement.classList.contains('seat-occupied')) {
+    if (seatElement.classList.contains('seat-occupied') || seatElement.classList.contains('seat-tus-compras')) {
         return;
     }
 
@@ -305,11 +312,13 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
 
 async function cargarAsientosOcupados(eventoId) {
     const usuarioID = localStorage.getItem('usuarioId');
-    occupiedSeats = await fetchAsientosOcupados(eventoId, usuarioID);
+    const result = await fetchAsientosOcupados(eventoId, usuarioID);
+    occupiedSeats = result.ocupados;
+    misComprasSeats = result.tusCompras;
     generateSeatGrid();
     
     selectedSeats.forEach(seatId => {
-        if (!occupiedSeats.includes(seatId)) {
+        if (!occupiedSeats.includes(seatId) && !misComprasSeats.includes(seatId)) {
             const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
             if (seat) {
                 seat.classList.add('seat-selected');
