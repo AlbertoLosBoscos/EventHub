@@ -116,9 +116,11 @@ async function fetchEventosPorFecha(fecha) {
     }
 }
 
-async function fetchAsientosOcupados(eventoID) {
+async function fetchAsientosOcupados(eventoID, usuarioID) {
     try {
-        const response = await fetch(`${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}`);
+        let url = `${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}`;
+        if (usuarioID) url += `&usuarioID=${usuarioID}`;
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Error al obtener asientos ocupados');
         return await response.json();
     } catch (error) {
@@ -302,13 +304,12 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
 };
 
 async function cargarAsientosOcupados(eventoId) {
-    const asientosPreviamenteSeleccionados = [...selectedSeats];
-    occupiedSeats = await fetchAsientosOcupados(eventoId);
+    const usuarioID = localStorage.getItem('usuarioId');
+    occupiedSeats = await fetchAsientosOcupados(eventoId, usuarioID);
     generateSeatGrid();
     
-    asientosPreviamenteSeleccionados.forEach(seatId => {
+    selectedSeats.forEach(seatId => {
         if (!occupiedSeats.includes(seatId)) {
-            selectedSeats.push(seatId);
             const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
             if (seat) {
                 seat.classList.add('seat-selected');

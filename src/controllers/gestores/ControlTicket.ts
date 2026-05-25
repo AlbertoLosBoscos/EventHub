@@ -140,7 +140,7 @@ export const obtenerTicketPorUsuarioYEvento = async (req: Request, res: Response
 }
 
 export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
-    const { eventoID } = req.query;
+    const { eventoID, usuarioID } = req.query;
     
     if (!eventoID) {
         res.status(400).json({ error: 'Falta el ID del evento' });
@@ -148,15 +148,22 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
     }
 
     try {
-        const { data, error } = await supabase
+        let query = supabase
             .from(tablaTicket)
-            .select('asientos')
+            .select('asientos, usuarioID, confirmado')
             .eq('eventoID', eventoID as string);
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
         const listaOcupados = data
             ? data
+                .filter(t => {
+                    if (t.confirmado) return true;
+                    if (usuarioID && t.usuarioID === usuarioID) return false;
+                    return true;
+                })
                 .map((t: { asientos: string }) => t.asientos)
                 .join(', ')
                 .split(',')
