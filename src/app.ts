@@ -28,6 +28,50 @@ app.use('/api/tickets', rutaTicket);
 app.use('/api/pago', rutaPago);
 
 
+app.get('/api/auth/callback', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Redirigiendo...</title></head>
+<body>
+<script>
+(function() {
+  var hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    var params = new URLSearchParams(hash.replace('#', '?'));
+    var accessToken = params.get('access_token');
+    if (accessToken) {
+      try {
+        var base64Url = accessToken.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var payload = JSON.parse(atob(base64));
+        var uid = payload.sub;
+        var email = payload.email || '';
+        if (uid) {
+          localStorage.setItem('usuarioId', uid);
+          localStorage.setItem('userEmail', email);
+          fetch('/api/auth/verificar-usuario-oauth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuarioId: uid, email: email })
+          }).catch(function(e) { console.error(e); });
+          window.location.href = '/main';
+        }
+      } catch(e) {
+        console.error('Error al procesar el token:', e);
+        window.location.href = '/login?error=auth';
+      }
+    } else {
+      window.location.href = '/login';
+    }
+  } else {
+    window.location.href = '/login';
+  }
+})();
+</script>
+</body>
+</html>`);
+});
+
 app.get('/config/stripe-key', (req, res) => {
     res.json({ publicKey: process.env.STRIPE_PUBLISHABLE });
 });
@@ -60,6 +104,26 @@ app.get('/admin', (req, res) => {
 
 app.get('/tickets', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/tickets.html'));
+});
+
+app.post('/api/auth/verificar-usuario-oauth', async (req, res) => {
+  const { usuarioId, email } = req.body;
+  if (!usuarioId) return res.status(400).json({ error: 'usuarioId requerido' });
+  try {
+    const { data: existente } = await supabase
+      .from('Auth_Users')
+      .select('id')
+      .eq('id', usuarioId)
+      .maybeSingle();
+    if (!existente) {
+      await supabase
+        .from('Auth_Users')
+        .insert({ id: usuarioId, email: email || '', rol: 'client' });
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/auth/verificar-admin', async (req, res) => {

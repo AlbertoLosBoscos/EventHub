@@ -69,28 +69,44 @@ export const login = async (req: Request, res: Response) => {
     }); 
 };
 
-export const loginConGoogle = async () => {
+export const loginConGoogle = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${localhost}/api/auth/callback` 
+      redirectTo: `${localhost}/api/auth/callback`
     }
   });
 
   if (error) {
-    console.error("Error al iniciar sesión:", error.message);
+    console.error("Error al iniciar sesión con Google:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (data?.url) {
+    res.redirect(data.url);
+  } else {
+    res.status(500).json({ error: "No se pudo obtener la URL de autenticación" });
   }
 };
 
-export const loginConGithub = async () => {
+export const loginConGithub = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `${localhost}/api/auth/callback` 
+      redirectTo: `${localhost}/api/auth/callback`
     }
   });
 
-  if (error) console.error("Error en GitHub login:", error.message);
+  if (error) {
+    console.error("Error al iniciar sesión con GitHub:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (data?.url) {
+    res.redirect(data.url);
+  } else {
+    res.status(500).json({ error: "No se pudo obtener la URL de autenticación" });
+  }
 };
 
 export const magicLink = async (req: Request, res: Response) => {
