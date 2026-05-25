@@ -95,8 +95,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 const uid = payload.sub; 
 
                 if (uid) {
-                    localStorage.setItem('usuarioId', uid); 
-                    window.location.href = '/main';
+                    localStorage.setItem('usuarioId', uid);
+                    fetch('/api/auth/verificar-usuario-oauth', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ usuarioId: uid, email: payload.email || '' })
+                    }).then(function(r) { return r.json(); }).then(function(d) {
+                        if (d.role) localStorage.setItem('userRole', d.role);
+                        window.location.href = '/main';
+                    }).catch(function(e) { console.error(e); window.location.href = '/main'; });
                 }
             } catch (e) {
                 console.error("Error al decodificar el token de acceso:", e);

@@ -53,8 +53,10 @@ app.get('/api/auth/callback', (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usuarioId: uid, email: email })
-          }).catch(function(e) { console.error(e); });
-          window.location.href = '/main';
+          }).then(function(r) { return r.json(); }).then(function(d) {
+            if (d.role) localStorage.setItem('userRole', d.role);
+            window.location.href = '/main';
+          }).catch(function(e) { console.error(e); window.location.href = '/main'; });
         }
       } catch(e) {
         console.error('Error al procesar el token:', e);
@@ -112,15 +114,16 @@ app.post('/api/auth/verificar-usuario-oauth', async (req, res) => {
   try {
     const { data: existente } = await supabase
       .from('Auth_Users')
-      .select('id')
+      .select('id, rol')
       .eq('id', usuarioId)
       .maybeSingle();
     if (!existente) {
       await supabase
         .from('Auth_Users')
         .insert({ id: usuarioId, email: email || '', rol: 'client' });
+      return res.json({ success: true, role: 'client' });
     }
-    res.json({ success: true });
+    res.json({ success: true, role: existente.rol || 'client' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
