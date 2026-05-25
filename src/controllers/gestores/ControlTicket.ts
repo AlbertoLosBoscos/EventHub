@@ -212,6 +212,27 @@ export const devolverEntradaCliente = async (req: Request, res: Response) => {
         return;
     }
     try {
+        const { data: ticket } = await supabase
+            .from(tablaTicket)
+            .select('fecha')
+            .eq('id', ticketID)
+            .maybeSingle();
+
+        if (!ticket) {
+            res.status(404).json({ error: 'Ticket no encontrado' });
+            return;
+        }
+
+        const fechaEvento = new Date(ticket.fecha);
+        const ahora = new Date();
+        fechaEvento.setHours(0, 0, 0, 0);
+        ahora.setHours(0, 0, 0, 0);
+
+        if (fechaEvento <= ahora) {
+            res.status(400).json({ error: 'No se puede devolver una entrada para un evento que ya ha ocurrido' });
+            return;
+        }
+
         const { error } = await supabase
             .from(tablaTicket)
             .delete()
@@ -234,13 +255,23 @@ export const devolverEntradaEmpleado = async (req: Request, res: Response) => {
     try {
         const { data: ticket, error: findError } = await supabase
             .from(tablaTicket)
-            .select('id, usuarioID')
+            .select('id, usuarioID, fecha')
             .eq('id', ticketID)
             .maybeSingle();
 
         if (findError) throw findError;
         if (!ticket) {
             res.status(404).json({ error: 'Ticket no encontrado' });
+            return;
+        }
+
+        const fechaEvento = new Date(ticket.fecha);
+        const ahora = new Date();
+        fechaEvento.setHours(0, 0, 0, 0);
+        ahora.setHours(0, 0, 0, 0);
+
+        if (fechaEvento <= ahora) {
+            res.status(400).json({ error: 'No se puede devolver una entrada para un evento que ya ha ocurrido' });
             return;
         }
 

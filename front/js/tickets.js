@@ -63,6 +63,13 @@ async function cargarMisTickets() {
         confirmados.forEach(ticket => {
             const card = document.createElement('div');
             card.className = 'ticket-card';
+
+            const fechaEvento = new Date(ticket.fecha);
+            const ahora = new Date();
+            fechaEvento.setHours(0, 0, 0, 0);
+            ahora.setHours(0, 0, 0, 0);
+            const puedeDevolver = fechaEvento > ahora;
+
             card.innerHTML = `
                 <div class="ticket-info">
                     <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
@@ -72,7 +79,7 @@ async function cargarMisTickets() {
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
-                    <button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>
+                    ${puedeDevolver ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
                 </div>
             `;
             container.appendChild(card);
@@ -136,6 +143,13 @@ async function cargarTodosTickets() {
         tickets.forEach(ticket => {
             const card = document.createElement('div');
             card.className = 'ticket-card';
+
+            const fechaEvento = new Date(ticket.fecha);
+            const ahora = new Date();
+            fechaEvento.setHours(0, 0, 0, 0);
+            ahora.setHours(0, 0, 0, 0);
+            const puedeDevolver = fechaEvento > ahora;
+
             card.innerHTML = `
                 <div class="ticket-info">
                     <h3>${ticket.eventoID ? 'Evento: ' + ticket.eventoID.substring(0, 8) + '...' : 'Sin evento'}</h3>
@@ -147,7 +161,7 @@ async function cargarTodosTickets() {
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
-                    <button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>
+                    ${puedeDevolver ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
                 </div>
             `;
             container.appendChild(card);

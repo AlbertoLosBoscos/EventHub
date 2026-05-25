@@ -458,9 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Error al confirmar ticket: ' + ticketResult.error);
                 } else {
                     alert('¡Compra confirmada! Gracias por tu compra en EventHub.');
-                    selectedSeats = [];
-                    currentTicket = null;
-                    updateSummary();
+                    location.reload();
                 }
             } else {
                 alert('Error: No hay ticket para confirmar');
