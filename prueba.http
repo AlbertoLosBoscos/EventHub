@@ -33,7 +33,7 @@ Content-Type: application/json
   "nombre": "Concierto de POP",
   "descripcion": "Un increíble concerto de rock",
   "sitioID": "22d22dc4-2311-4e8e-b90c-96e3678d259e",
-  "fecha": "2026-05-24T21:30:00",
+  "fecha": "2026-05-24T23:30:00",
   "compania": "Banda Rock",
   "duracion": 120
 }
