@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.subpanel-section').forEach(s => s.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('subsection-' + btn.dataset.subsection).classList.add('active');
+            if (btn.dataset.subsection === 'crear-anfiteatro') {
+                cargarPisosSelect('inputAnfiPiso', true);
+            } else if (btn.dataset.subsection === 'crear-palco') {
+                cargarPisosSelect('inputPalcoPiso');
+            }
         });
     });
 

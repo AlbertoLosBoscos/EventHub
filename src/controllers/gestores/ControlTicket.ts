@@ -61,20 +61,23 @@ export const verTicketsPorUsuario = async (req: Request, res: Response) => {
 }
 
 export const crearTicket = async (req: Request, res: Response) => {
-    const {usuarioID, asientos, eventoID, fecha, duracion} = req.body;
+    const {usuarioID, asientos, eventoID, fecha, duracion, planta} = req.body;
     if(!usuarioID || !eventoID){
         res.status(400).json({ error: 'Faltan campos requeridos' });
         return;
     }
 
     try {
-        const { data: existente } = await supabase
+        let query = supabase
             .from(tablaTicket)
             .select('id')
             .eq('usuarioID', usuarioID)
             .eq('eventoID', eventoID)
-            .eq('confirmado', false)
-            .maybeSingle();
+            .eq('confirmado', false);
+        if (planta !== undefined) {
+            query = query.eq('planta', planta);
+        }
+        const { data: existente } = await query.maybeSingle();
 
         if (existente) {
             const { data: actualizado, error: errorActualizado } = await supabase
@@ -97,6 +100,7 @@ export const crearTicket = async (req: Request, res: Response) => {
                 eventoID, 
                 fecha, 
                 duracion,
+                planta: planta ?? null,
                 confirmado: false })
             .select()
             .single();
@@ -110,7 +114,7 @@ export const crearTicket = async (req: Request, res: Response) => {
 }
 
 export const actualizarTicket = async (req: Request, res: Response) => {
-    const { ticketID, asientos, confirmado } = req.body;
+    const { ticketID, asientos, confirmado, planta } = req.body;
     
     if (!ticketID) {
         res.status(400).json({ error: 'Falta el ID del ticket' });
@@ -121,6 +125,7 @@ export const actualizarTicket = async (req: Request, res: Response) => {
         const updateData: any = {};
         if (asientos !== undefined) updateData.asientos = asientos;
         if (confirmado !== undefined) updateData.confirmado = confirmado;
+        if (planta !== undefined) updateData.planta = planta;
 
         const { data, error } = await supabase
             .from(tablaTicket)
@@ -138,7 +143,7 @@ export const actualizarTicket = async (req: Request, res: Response) => {
 }
 
 export const obtenerTicketPorUsuarioYEvento = async (req: Request, res: Response) => {
-    const { usuarioID, eventoID } = req.query;
+    const { usuarioID, eventoID, planta } = req.query;
     
     if (!usuarioID || !eventoID) {
         res.status(400).json({ error: 'Faltan datos requeridos' });
@@ -146,13 +151,16 @@ export const obtenerTicketPorUsuarioYEvento = async (req: Request, res: Response
     }
 
     try {
-        const { data, error } = await supabase
+        let query = supabase
             .from(tablaTicket)
             .select('*')
             .eq('usuarioID', usuarioID as string)
             .eq('eventoID', eventoID as string)
-            .eq('confirmado', false)
-            .maybeSingle();
+            .eq('confirmado', false);
+        if (planta !== undefined) {
+            query = query.eq('planta', parseInt(planta as string));
+        }
+        const { data, error } = await query.maybeSingle();
 
         if (error) throw error;
 
@@ -163,7 +171,7 @@ export const obtenerTicketPorUsuarioYEvento = async (req: Request, res: Response
 }
 
 export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
-    const { eventoID, usuarioID } = req.query;
+    const { eventoID, usuarioID, planta } = req.query;
     
     if (!eventoID) {
         res.status(400).json({ error: 'Falta el ID del evento' });
@@ -175,6 +183,9 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
             .from(tablaTicket)
             .select('asientos, usuarioID, confirmado')
             .eq('eventoID', eventoID as string);
+        if (planta !== undefined) {
+            query = query.eq('planta', parseInt(planta as string));
+        }
 
         const { data, error } = await query;
 

@@ -32,12 +32,14 @@ async function crearTicket(usuarioID, asientos, eventoID, fecha, duracion) {
     }
 }
 
-async function actualizarTicket(ticketID, asientos, confirmado) {
+async function actualizarTicket(ticketID, asientos, confirmado, planta) {
     try {
+        const body = { ticketID, asientos, confirmado };
+        if (planta !== undefined) body.planta = planta;
         const response = await fetch(`${API_BASE}/tickets/actualizar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticketID, asientos, confirmado })
+            body: JSON.stringify(body)
         });
         return await response.json();
     } catch (error) {
@@ -119,10 +121,11 @@ async function fetchEventosPorFecha(fecha) {
     }
 }
 
-async function fetchAsientosOcupados(eventoID, usuarioID) {
+async function fetchAsientosOcupados(eventoID, usuarioID, planta) {
     try {
         let url = `${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}`;
         if (usuarioID) url += `&usuarioID=${usuarioID}`;
+        if (planta !== undefined) url += `&planta=${planta}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Error al obtener asientos ocupados');
         const data = await response.json();
@@ -183,16 +186,24 @@ async function cargarAnfiteatro(pisoID) {
         currentAnfiteatro = anfiteatros[0];
         occupiedSeats = [];
         misComprasSeats = [];
+
+        const piso = pisos.find(p => p.id === pisoID);
+        const planta = piso ? piso.planta : undefined;
+
+        if (currentTicket && currentTicket.id && planta !== undefined) {
+            await actualizarTicket(currentTicket.id, undefined, undefined, planta);
+        }
+
         generateSeatGrid();
-        await cargarAsientosOcupados(currentEvent.eventoId);
+        await cargarAsientosOcupados(currentEvent.eventoId, planta);
     } catch (e) {
         console.error('Error al cargar anfiteatro:', e);
     }
 }
 
-async function cargarAsientosOcupados(eventoId) {
+async function cargarAsientosOcupados(eventoId, planta) {
     const usuarioID = localStorage.getItem('usuarioId');
-    const result = await fetchAsientosOcupados(eventoId, usuarioID);
+    const result = await fetchAsientosOcupados(eventoId, usuarioID, planta);
     occupiedSeats = result.ocupados;
     misComprasSeats = result.tusCompras;
     const grid = document.getElementById('seatGrid');
@@ -298,7 +309,8 @@ function toggleSeat(seatElement, seatId) {
     }
 
     if (currentTicket && currentTicket.id) {
-        actualizarTicket(currentTicket.id, selectedSeats.join(', '), false);
+        const piso = pisos.find(p => p.id === selectedPisoID);
+        actualizarTicket(currentTicket.id, selectedSeats.join(', '), false, piso?.planta);
     }
 
     updateSummary();

@@ -28,7 +28,7 @@ export const verPisosSinAnfiteatro = async (req: Request, res: Response) => {
 
         let query = supabase.from(tablaPiso).select('*');
         if (idsOcupados.length > 0) {
-            query = query.not('id', 'in', `(${idsOcupados.map(id => `'${id}'`).join(',')})`);
+            query = query.filter('id', 'not.in', `(${idsOcupados.join(',')})`);
         }
         const { data } = await query;
         res.json(data);
