@@ -75,6 +75,7 @@ async function cargarMisTickets() {
                     <h3>Ticket: ${ticket.id}</h3>
                     <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
                     <p><strong>Email:</strong> ${ticket.usuarioEmail || '-'}</p>
+                    <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
                     <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
                     <p><strong>Estado:</strong> ✅ Confirmado</p>
@@ -157,6 +158,7 @@ async function cargarTodosTickets() {
                     <h3>Ticket: ${ticket.id}</h3>
                     <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
                     <p><strong>Email:</strong> ${ticket.usuarioEmail || ticket.usuarioID || '-'}</p>
+                    <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
                     <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
                     <p><strong>Estado:</strong> ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
@@ -214,6 +216,7 @@ function mostrarDetalleTicket(ticket) {
             <p><strong>Evento ID:</strong> ${ticket.eventoID || '-'}</p>
             <p><strong>Email:</strong> ${ticket.usuarioEmail || '-'}</p>
             <p><strong>Usuario ID:</strong> ${ticket.usuarioID || '-'}</p>
+            <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
             <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
             <p><strong>Fecha evento:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</p>
             <p><strong>Duración:</strong> ${ticket.duracion || '-'} min</p>
