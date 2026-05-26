@@ -488,6 +488,132 @@ body {
     background: var(--surface-container-high);
 }
 
+.palcos-sidebar {
+    margin-top: 1.5rem;
+}
+
+.palcos-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--on-surface);
+}
+
+.palco-card {
+    background: var(--surface-container);
+    border: 1px solid var(--outline-variant);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.palco-card.selected {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.palco-card.selected .palco-precio,
+.palco-card.selected .palco-asientos {
+    color: var(--on-primary);
+}
+
+.palco-card.selected .palco-info {
+    color: var(--on-primary);
+}
+
+.palco-card.sold {
+    background: var(--surface-dim);
+    border-color: var(--surface-dim);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.palco-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.palco-check {
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--on-primary);
+    color: var(--primary);
+}
+
+.palco-card:not(.selected) .palco-check {
+    visibility: hidden;
+}
+
+#palcosList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.palco-card:hover {
+    border-color: var(--primary);
+}
+
+.palco-card.selected {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.palco-card.selected .palco-precio {
+    color: var(--on-primary);
+}
+
+.palco-card.sold {
+    background: var(--surface-dim);
+    border-color: var(--surface-dim);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.palco-nombre {
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.palco-asientos {
+    font-size: 0.7rem;
+    color: var(--on-surface-variant);
+}
+
+.palco-card.selected .palco-asientos {
+    color: var(--on-primary);
+}
+
+.palco-precio {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 0.25rem;
+}
+
+.palco-empty {
+    font-size: 0.75rem;
+    color: var(--on-surface-variant);
+    text-align: center;
+    padding: 1rem 0;
+}
+
 .stage {
     text-align: center;
     margin-bottom: 3rem;

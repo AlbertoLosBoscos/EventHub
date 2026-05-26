@@ -5,9 +5,12 @@ const tablaPalco = 'BDPalco';
 
 export const verPalcos = async (req: Request, res: Response) => {
     try {
-        const { data } = await supabase
-            .from(tablaPalco)
-            .select('*');
+        const { pisoID } = req.query;
+        let query = supabase.from(tablaPalco).select('*');
+        if (pisoID) {
+            query = query.eq('pisoID', pisoID as string);
+        }
+        const { data } = await query;
         res.json(data);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

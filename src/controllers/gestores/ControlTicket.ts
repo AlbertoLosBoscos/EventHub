@@ -132,9 +132,13 @@ export const actualizarTicket = async (req: Request, res: Response) => {
             .update(updateData)
             .eq('id', ticketID)
             .select()
-            .single();
+            .maybeSingle();
 
         if (error) throw error;
+        if (!data) {
+            res.status(404).json({ error: 'Ticket no encontrado' });
+            return;
+        }
 
         res.json({ message: 'Ticket actualizado', data });
     } catch (error: any) {
