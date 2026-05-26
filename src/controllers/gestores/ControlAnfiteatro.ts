@@ -5,9 +5,12 @@ const tablaAnfiteatro = 'BDAnfiteatro';
 
 export const verAnfiteatros = async (req: Request, res: Response) => {
     try {
-        const { data } = await supabase
-            .from(tablaAnfiteatro)
-            .select('*');
+        const { pisoID } = req.query;
+        let query = supabase.from(tablaAnfiteatro).select('*');
+        if (pisoID) {
+            query = query.eq('pisoID', pisoID as string);
+        }
+        const { data } = await query;
         res.json(data);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

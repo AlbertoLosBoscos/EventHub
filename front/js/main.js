@@ -1,7 +1,3 @@
-const ROWS = 15;
-const COLS = 15;
-const COL_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
-const PRICE_PER_SEAT = 45;
 const SERVICE_FEE_PERCENTAGE = 0.05;
 
 let selectedSeats = [];
@@ -13,6 +9,12 @@ let misComprasSeats = [];
 let stripe = null;
 let stripePublicKey = null;
 let cardElements = null;
+
+let currentSitioID = null;
+let currentAnfiteatro = null;
+let pisos = [];
+let selectedPisoID = null;
+let COL_LABELS = [];
 
 const API_BASE = 'http://localhost:3000/api';
 
@@ -134,39 +136,143 @@ async function fetchAsientosOcupados(eventoID, usuarioID) {
     }
 }
 
+async function cargarPisos(sitioID) {
+    try {
+        const r = await fetch(`${API_BASE}/pisos/mostrar?sitioID=${sitioID}`);
+        pisos = await r.json();
+        if (!pisos || pisos.length === 0) {
+            document.getElementById('pisoSelector').innerHTML = '<p>No hay pisos configurados para este sitio.</p>';
+            document.getElementById('seatGrid').innerHTML = '';
+            document.getElementById('seatsSubtitle').textContent = 'Sin pisos disponibles';
+            return;
+        }
+        renderPisoSelector();
+        const targetPiso = pisos.find(p => p.planta === 0) || pisos[0];
+        await seleccionarPiso(targetPiso.id);
+    } catch (e) {
+        console.error('Error al cargar pisos:', e);
+    }
+}
+
+function renderPisoSelector() {
+    const container = document.getElementById('pisoSelector');
+    container.innerHTML = pisos.map(p => `
+        <button class="piso-btn${selectedPisoID === p.id ? ' active' : ''}"
+                onclick="seleccionarPiso('${p.id}')">
+            Planta ${p.planta}
+        </button>
+    `).join('');
+}
+
+window.seleccionarPiso = async function(pisoID) {
+    selectedPisoID = pisoID;
+    renderPisoSelector();
+    document.getElementById('seatsSubtitle').textContent = `Planta ${pisos.find(p => p.id === pisoID)?.planta || ''}`;
+    await cargarAnfiteatro(pisoID);
+};
+
+async function cargarAnfiteatro(pisoID) {
+    try {
+        const r = await fetch(`${API_BASE}/anfiteatros/mostrar?pisoID=${pisoID}`);
+        const anfiteatros = await r.json();
+        if (!anfiteatros || anfiteatros.length === 0) {
+            document.getElementById('seatGrid').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--on-surface-variant);padding:2rem">Este piso no tiene un anfiteatro configurado.</p>';
+            currentAnfiteatro = null;
+            return;
+        }
+        currentAnfiteatro = anfiteatros[0];
+        occupiedSeats = [];
+        misComprasSeats = [];
+        generateSeatGrid();
+        await cargarAsientosOcupados(currentEvent.eventoId);
+    } catch (e) {
+        console.error('Error al cargar anfiteatro:', e);
+    }
+}
+
+async function cargarAsientosOcupados(eventoId) {
+    const usuarioID = localStorage.getItem('usuarioId');
+    const result = await fetchAsientosOcupados(eventoId, usuarioID);
+    occupiedSeats = result.ocupados;
+    misComprasSeats = result.tusCompras;
+    const grid = document.getElementById('seatGrid');
+    if (!grid) return;
+    document.querySelectorAll('.seat').forEach(seat => {
+        const seatId = seat.dataset.seatId;
+        if (misComprasSeats.includes(seatId)) {
+            seat.classList.add('seat-tus-compras');
+        } else if (occupiedSeats.includes(seatId)) {
+            seat.classList.add('seat-occupied');
+        }
+    });
+    selectedSeats.forEach(seatId => {
+        if (!occupiedSeats.includes(seatId) && !misComprasSeats.includes(seatId)) {
+            const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
+            if (seat) {
+                seat.classList.add('seat-selected');
+                seat.textContent = '✓';
+            }
+        }
+    });
+    updateSummary();
+}
+
 function generateSeatGrid() {
+    const anfiteatro = currentAnfiteatro;
+    if (!anfiteatro) return;
+    const filas = anfiteatro.filas;
+    const columnas = anfiteatro.columnas;
+    const asientosVacios = anfiteatro.asientosVacios || [];
+    const asientosVips = anfiteatro.asientosVips || [];
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    COL_LABELS = [];
+    for (let i = 0; i < columnas; i++) {
+        COL_LABELS.push(letters[i]);
+    }
+
     const seatGrid = document.getElementById('seatGrid');
     seatGrid.innerHTML = '';
+    seatGrid.style.gridTemplateColumns = `2rem repeat(${columnas}, 2rem)`;
 
     const emptyCorner = document.createElement('div');
     seatGrid.appendChild(emptyCorner);
 
-    for (let col = 0; col < COLS; col++) {
+    for (let col = 0; col < columnas; col++) {
         const label = document.createElement('div');
         label.className = 'seat-label';
         label.textContent = COL_LABELS[col];
         seatGrid.appendChild(label);
     }
 
-    for (let row = 1; row <= ROWS; row++) {
+    for (let row = 1; row <= filas; row++) {
         const rowLabel = document.createElement('div');
         rowLabel.className = 'seat-label';
         rowLabel.textContent = row;
         seatGrid.appendChild(rowLabel);
 
-        for (let col = 0; col < COLS; col++) {
-            const seat = document.createElement('div');
+        for (let col = 0; col < columnas; col++) {
             const seatId = `${row}${COL_LABELS[col]}`;
-            
+
+            if (asientosVacios.includes(seatId)) {
+                const placeholder = document.createElement('div');
+                placeholder.style.visibility = 'hidden';
+                placeholder.style.pointerEvents = 'none';
+                placeholder.style.width = '2rem';
+                placeholder.style.height = '2rem';
+                seatGrid.appendChild(placeholder);
+                continue;
+            }
+
+            const seat = document.createElement('div');
             seat.className = 'seat';
             seat.dataset.seatId = seatId;
             seat.dataset.row = row;
             seat.dataset.col = COL_LABELS[col];
+            seat.dataset.isVip = asientosVips.includes(seatId) ? 'true' : 'false';
 
-            if (misComprasSeats.includes(seatId)) {
-                seat.classList.add('seat-tus-compras');
-            } else if (occupiedSeats.includes(seatId)) {
-                seat.classList.add('seat-occupied');
+            if (asientosVips.includes(seatId)) {
+                seat.classList.add('seat-vip');
+                seat.addEventListener('click', () => toggleSeat(seat, seatId));
             } else {
                 seat.addEventListener('click', () => toggleSeat(seat, seatId));
             }
@@ -191,17 +297,18 @@ function toggleSeat(seatElement, seatId) {
         seatElement.textContent = '✓';
     }
 
-    console.log('Asientos actualizados:', selectedSeats);
-    console.log('Ticket actual:', currentTicket);
-    
     if (currentTicket && currentTicket.id) {
-        console.log('Actualizando ticket:', currentTicket.id, 'asientos:', selectedSeats.join(', '));
         actualizarTicket(currentTicket.id, selectedSeats.join(', '), false);
-    } else {
-        console.warn('No hay ticket para actualizar');
     }
 
     updateSummary();
+}
+
+function getPrecioAsiento(seatId) {
+    if (currentAnfiteatro && currentAnfiteatro.asientosVips && currentAnfiteatro.asientosVips.includes(seatId)) {
+        return currentAnfiteatro.precioVips || currentAnfiteatro.precio || 45;
+    }
+    return currentAnfiteatro?.precio || 45;
 }
 
 function updateSummary() {
@@ -220,11 +327,12 @@ function updateSummary() {
         const col = seatId.slice(-1);
         const tag = document.createElement('span');
         tag.className = 'seat-tag';
-        tag.textContent = `FILA ${row}, ${col}${row}`;
+        const precio = getPrecioAsiento(seatId);
+        tag.textContent = `FILA ${row}, ${col}${row} €${precio}`;
         selectedSeatsList.appendChild(tag);
     });
 
-    const subtotal = seatCount * PRICE_PER_SEAT;
+    const subtotal = selectedSeats.reduce((sum, s) => sum + getPrecioAsiento(s), 0);
     const serviceFee = subtotal * SERVICE_FEE_PERCENTAGE;
     const total = subtotal + serviceFee;
 
@@ -246,7 +354,7 @@ function renderizarEventos(eventos) {
     countEl.textContent = `${eventos.length} eventos disponibles`;
     
     container.innerHTML = eventos.map(evento => `
-        <div class="event-card" data-event-id="${evento.id}" onclick="seleccionarEvento('${evento.id}', '${evento.nombre}', ${evento.duracion}, '${evento.fecha}')">
+        <div class="event-card" data-event-id="${evento.id}" onclick="seleccionarEvento('${evento.id}', '${evento.nombre}', ${evento.duracion}, '${evento.fecha}', '${evento.sitioID || ''}')">
             <div class="event-image">
                 ${evento.imagen ? `<img src="${evento.imagen}" alt="${evento.nombre}">` : '<div class="event-image-placeholder"></div>'}
             </div>
@@ -262,10 +370,15 @@ function renderizarEventos(eventos) {
     `).join('');
 }
 
-window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
+window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha, sitioID) {
     const usuarioID = localStorage.getItem('usuarioId') || 'demo-user-123';
     
     currentEvent = { eventoId, nombre, duracion, fecha };
+    currentSitioID = sitioID;
+    
+    selectedSeats = [];
+    occupiedSeats = [];
+    misComprasSeats = [];
     
     document.querySelectorAll('.event-card').forEach(card => {
         card.classList.remove('event-card-selected');
@@ -305,30 +418,17 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha) {
     document.getElementById('stepIndicator3').classList.remove('step-inactive');
     updateStepIndicator(3);
     
-    await cargarAsientosOcupados(eventoId);
+    if (currentSitioID) {
+        await cargarPisos(currentSitioID);
+    } else {
+        document.getElementById('pisoSelector').innerHTML = '<p>Este evento no tiene un sitio asignado.</p>';
+        document.getElementById('seatGrid').innerHTML = '';
+        document.getElementById('seatsSubtitle').textContent = 'Sin ubicación';
+    }
     
     updateSummary();
 };
 
-async function cargarAsientosOcupados(eventoId) {
-    const usuarioID = localStorage.getItem('usuarioId');
-    const result = await fetchAsientosOcupados(eventoId, usuarioID);
-    occupiedSeats = result.ocupados;
-    misComprasSeats = result.tusCompras;
-    generateSeatGrid();
-    
-    selectedSeats.forEach(seatId => {
-        if (!occupiedSeats.includes(seatId) && !misComprasSeats.includes(seatId)) {
-            const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
-            if (seat) {
-                seat.classList.add('seat-selected');
-                seat.textContent = '✓';
-            }
-        }
-    });
-    
-    updateSummary();
-}
 
 function updateStepIndicator(step) {
     for (let i = 1; i <= 4; i++) {
@@ -384,6 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDate = fecha;
         selectedSeats = [];
         currentEvent = null;
+        currentSitioID = null;
+        currentAnfiteatro = null;
+        pisos = [];
+        selectedPisoID = null;
         
         const dateSelectedEl = document.getElementById('dateSelected');
         if (dateSelectedEl) {
@@ -414,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const btn = e.target;
-            const subtotal = selectedSeats.length * PRICE_PER_SEAT;
+            const subtotal = selectedSeats.reduce((sum, s) => sum + getPrecioAsiento(s), 0);
             const serviceFee = subtotal * SERVICE_FEE_PERCENTAGE;
             const total = subtotal + serviceFee;
 

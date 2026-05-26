@@ -14,6 +14,7 @@ body {
     max-width: 800px;
     margin: 0 auto;
     padding: 1rem;
+    padding-bottom: 4rem;
 }
 
 .admin-header {
@@ -95,7 +96,8 @@ body {
     color: #1a1a2e;
 }
 
-.admin-section label {
+.admin-section label,
+.subpanel-section label {
     display: block;
     margin-bottom: 0.75rem;
     font-size: 0.9rem;
@@ -104,7 +106,10 @@ body {
 
 .admin-section input,
 .admin-section textarea,
-.admin-section select {
+.admin-section select,
+.subpanel-section input,
+.subpanel-section textarea,
+.subpanel-section select {
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #ccc;
@@ -114,12 +119,14 @@ body {
     margin-top: 0.25rem;
 }
 
-.admin-section textarea {
+.admin-section textarea,
+.subpanel-section textarea {
     resize: vertical;
     min-height: 60px;
 }
 
 .admin-section button[type="submit"],
+.subpanel-section button[type="submit"],
 #btnEliminar {
     background: #1a1a2e;
     color: #fff;
@@ -135,7 +142,8 @@ body {
     background: #e94560;
 }
 
-.admin-section button[type="submit"]:hover {
+.admin-section button[type="submit"]:hover,
+.subpanel-section button[type="submit"]:hover {
     background: #0f3460;
 }
 
@@ -170,6 +178,145 @@ body {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+.admin-subpanel {
+    background: #fff;
+    border-radius: 4px;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+}
+
+.subpanel-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 1rem;
+}
+
+.subpanel-header h2 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.subpanel-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    background: #16213e;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.subpanel-nav-btn {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: #a0a0b0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.subpanel-nav-btn:hover {
+    background: #0f3460;
+    color: #fff;
+}
+
+.subpanel-nav-btn.active {
+    background: #0f3460;
+    color: #fff;
+    font-weight: bold;
+}
+
+.subpanel-section {
+    display: none;
+    padding: 1rem 1.5rem 1.5rem;
+}
+
+.subpanel-section.active {
+    display: block;
+}
+
+.subpanel-section h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+    margin-bottom: 0.75rem;
+}
+
+.anfi-grid-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.anfi-grid-row label {
+    flex: 1;
+}
+
+.stage-label {
+    text-align: center;
+    font-weight: bold;
+    color: #1a1a2e;
+    margin: 1rem 0 0.5rem;
+}
+
+.anfi-grid {
+    display: grid;
+    gap: 3px;
+    justify-content: center;
+    margin: 0.5rem 0;
+}
+
+.anfi-seat {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    cursor: pointer;
+    background: #e8f5e9;
+    user-select: none;
+}
+
+.anfi-seat.vacio {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.anfi-seat.vip {
+    background: #ffd700;
+    border-color: #b8960f;
+    color: #333;
+}
+
+.anfi-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 0.75rem 0;
+    font-size: 0.8rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.legend-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    border: 1px solid #ccc;
+}
+
+.legend-box.legend-normal { background: #e8f5e9; }
+.legend-box.legend-vacio { background: #333; }
+.legend-box.legend-vip { background: #ffd700; }
 
 .user-card {
     border: 1px solid #ddd;

@@ -18,7 +18,6 @@
 
         <nav class="admin-nav">
             <button class="admin-nav-btn active" data-section="crear">Añadir Evento</button>
-            <button class="admin-nav-btn" data-section="crear-sitio">Añadir Sitio</button>
             <button class="admin-nav-btn" data-section="eliminar">Eliminar Evento</button>
             <button class="admin-nav-btn" data-section="gestionar">Gestionar Evento</button>
             <button class="admin-nav-btn" data-section="usuarios">Gestionar Usuarios</button>
@@ -38,17 +37,6 @@
                     <button type="submit">Crear Evento</button>
                 </form>
                 <div id="mensajeCrear" class="admin-mensaje"></div>
-            </section>
-
-            <section id="section-crear-sitio" class="admin-section">
-                <h2>Añadir Sitio</h2>
-                <form id="formCrearSitio">
-                    <label>Nombre <input type="text" id="inputSitioNombre" required></label>
-                    <label>Aforo <input type="number" id="inputSitioAforo" required></label>
-                    <label>ID del Anfiteatro <input type="text" id="inputSitioAnfiteatro"></label>
-                    <button type="submit">Crear Sitio</button>
-                </form>
-                <div id="mensajeCrearSitio" class="admin-mensaje"></div>
             </section>
 
             <section id="section-eliminar" class="admin-section">
@@ -82,6 +70,76 @@
                 <div id="usuariosList"></div>
             </section>
         </main>
+
+        <div class="admin-subpanel">
+            <header class="subpanel-header">
+                <h2>Gestión de Recintos</h2>
+            </header>
+            <nav class="subpanel-nav">
+                <button class="subpanel-nav-btn active" data-subsection="crear-piso">Añadir Piso</button>
+                <button class="subpanel-nav-btn" data-subsection="crear-anfiteatro">Añadir Anfiteatro</button>
+                <button class="subpanel-nav-btn" data-subsection="crear-palco">Añadir Palco</button>
+                <button class="subpanel-nav-btn" data-subsection="crear-sitio">Añadir Sitio</button>
+            </nav>
+
+            <section class="subpanel-section active" id="subsection-crear-piso">
+                <h3>Añadir Piso</h3>
+                <form id="formCrearPiso">
+                    <label>Número de Planta <input type="number" id="inputPisoPlanta" min="0" required></label>
+                    <label>Sitio <select id="inputPisoSitio" required><option value="">-- Selecciona un sitio --</option></select></label>
+                    <button type="submit">Crear Piso</button>
+                </form>
+                <div id="mensajeCrearPiso" class="admin-mensaje"></div>
+            </section>
+
+            <section class="subpanel-section" id="subsection-crear-anfiteatro">
+                <h3>Añadir Anfiteatro</h3>
+                <form id="formCrearAnfiteatro">
+                    <div class="anfi-grid-row">
+                        <label>Precio asiento <input type="number" id="inputAnfiPrecio" step="0.01" required></label>
+                        <label>Precio VIP <input type="number" id="inputAnfiPrecioVip" step="0.01"></label>
+                    </div>
+                    <div class="anfi-grid-row">
+                        <label>Filas <input type="number" id="inputAnfiFilas" min="1" max="20" required></label>
+                        <label>Columnas <input type="number" id="inputAnfiColumnas" min="1" max="26" required></label>
+                    </div>
+                    <button type="button" id="btnGenerarGrid">Generar Escenario</button>
+                    <div id="anfiGridContainer" class="hidden">
+                        <div class="stage-label">ESCENARIO</div>
+                        <div class="anfi-grid" id="anfiGrid"></div>
+                        <p class="anfi-legend">
+                            <span class="legend-item"><span class="legend-box legend-normal"></span> Normal</span>
+                            <span class="legend-item"><span class="legend-box legend-vacio"></span> Vacío</span>
+                            <span class="legend-item"><span class="legend-box legend-vip"></span> VIP</span>
+                        </p>
+                    </div>
+                    <label>Piso <select id="inputAnfiPiso" required><option value="">-- Selecciona un piso --</option></select></label>
+                    <button type="submit" id="btnCrearAnfiteatro" class="hidden">Crear Anfiteatro</button>
+                </form>
+                <div id="mensajeCrearAnfiteatro" class="admin-mensaje"></div>
+            </section>
+
+            <section class="subpanel-section" id="subsection-crear-palco">
+                <h3>Añadir Palco</h3>
+                <form id="formCrearPalco">
+                    <label>Número de asientos <input type="number" id="inputPalcoAsientos" min="1" required></label>
+                    <label>Precio del palco <input type="number" id="inputPalcoPrecio" step="0.01" required></label>
+                    <label>Piso <select id="inputPalcoPiso" required><option value="">-- Selecciona un piso --</option></select></label>
+                    <button type="submit">Crear Palco</button>
+                </form>
+                <div id="mensajeCrearPalco" class="admin-mensaje"></div>
+            </section>
+
+            <section class="subpanel-section" id="subsection-crear-sitio">
+                <h3>Añadir Sitio</h3>
+                <form id="formCrearSitio">
+                    <label>Nombre <input type="text" id="inputSitioNombre" required></label>
+                    <label>Aforo <input type="number" id="inputSitioAforo" required></label>
+                    <button type="submit">Crear Sitio</button>
+                </form>
+                <div id="mensajeCrearSitio" class="admin-mensaje"></div>
+            </section>
+        </div>
     </div>
 
     <script src="../js/admin.js"></script>
