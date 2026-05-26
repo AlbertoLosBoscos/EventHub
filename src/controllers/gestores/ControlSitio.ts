@@ -17,7 +17,7 @@ export const verSitios = async (req: Request, res: Response) => {
 }
 
 export const crearSitio = async (req: Request, res: Response) => {
-    const {nombre, aforo, anfiteatrosID} = req.body;
+    const {nombre, aforo} = req.body;
     if (!nombre || !aforo) {
         res.status(400).json({ error: 'Faltan campos requeridos' });
         return;
@@ -28,8 +28,7 @@ export const crearSitio = async (req: Request, res: Response) => {
             .from(tablaSitio)
             .insert({ 
                 nombre, 
-                aforo, 
-                anfiteatrosID })
+                aforo })
             .select()
             .single();
 

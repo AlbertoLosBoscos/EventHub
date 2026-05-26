@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {supabase} from '../../supabase'
+import { supabase } from '../../supabase';
 
 const tablaPalco = 'BDPalco';
 
@@ -7,9 +7,7 @@ export const verPalcos = async (req: Request, res: Response) => {
     try {
         const { data } = await supabase
             .from(tablaPalco)
-            .select('*')
-
-
+            .select('*');
         res.json(data);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -17,28 +15,22 @@ export const verPalcos = async (req: Request, res: Response) => {
 };
 
 export const crearPalco = async (req: Request, res: Response) => {
-    const {numero, asientos, precio} = req.body;
-    if (!numero || !asientos || !precio) {
-        res.status(400).json({ error: 'Faltan campos requeridos' });
+    const { asientos, precio, pisoID } = req.body;
+    if (!asientos || !precio || !pisoID) {
+        res.status(400).json({ error: 'Faltan campos requeridos: asientos, precio, pisoID' });
         return;
     }
 
-    try{
-        const { data } = await supabase
+    try {
+        const { data, error } = await supabase
             .from(tablaPalco)
-            .insert({
-                numero,
-                asientos,
-                precio
-            })
-            .select() 
+            .insert({ asientos, precio, pisoID })
+            .select()
             .single();
 
-        res.status(201).json({ message: "palco creado correctamente", data });
-
-    }catch (error: any) {
+        if (error) throw error;
+        res.status(201).json({ message: 'Palco creado con éxito', data });
+    } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
-}
-
-
+};
