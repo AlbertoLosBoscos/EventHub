@@ -1,5 +1,13 @@
 const API_BASE = 'http://localhost:3000/api';
 
+function formatearAsientos(asientos) {
+    if (!asientos) return 'Ninguno';
+    return asientos.split(',').map(s => s.trim()).filter(s => s).map(s => {
+        if (s.startsWith('PALCO-')) return 'Palco ' + s.replace('PALCO-', '');
+        return s;
+    }).join(', ');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const userRole = localStorage.getItem('userRole');
     const isStaff = userRole === 'admin' || userRole === 'employee';
@@ -76,7 +84,7 @@ async function cargarMisTickets() {
                     <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
                     <p><strong>Email:</strong> ${ticket.usuarioEmail || '-'}</p>
                     <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
-                    <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
+                    <p><strong>Asientos:</strong> ${formatearAsientos(ticket.asientos)}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
                     <p><strong>Estado:</strong> ✅ Confirmado</p>
                 </div>
@@ -159,7 +167,7 @@ async function cargarTodosTickets() {
                     <p><strong>Evento:</strong> ${ticket.eventoNombre || ticket.eventoID || '-'}</p>
                     <p><strong>Email:</strong> ${ticket.usuarioEmail || ticket.usuarioID || '-'}</p>
                     <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
-                    <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
+                    <p><strong>Asientos:</strong> ${formatearAsientos(ticket.asientos)}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
                     <p><strong>Estado:</strong> ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
                 </div>

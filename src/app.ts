@@ -82,6 +82,13 @@ app.get('/config/stripe-key', (req, res) => {
     res.json({ publicKey: process.env.STRIPE_PUBLISHABLE });
 });
 
+app.get('/api/config', (req, res) => {
+    res.json({
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabasePublishableKey: process.env.SUPABASE_KEY,
+    });
+});
+
 app.use(express.static(path.join(__dirname, '../front'))); 
 
 app.get('/', (req, res) => {

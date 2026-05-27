@@ -16,7 +16,13 @@ let pisos = [];
 let selectedPisoID = null;
 let COL_LABELS = [];
 let selectedPalco = null;
+let selectedPalcoNumero = null;
 let selectedPalcoPrecio = 0;
+
+let supabaseRealtime = null;
+let realtimeChannel = null;
+let realtimeUsuarioID = null;
+let currentPisoPlanta = undefined;
 
 const API_BASE = 'http://localhost:3000/api';
 
@@ -193,6 +199,7 @@ async function cargarAnfiteatro(pisoID) {
 
         const piso = pisos.find(p => p.id === pisoID);
         const planta = piso ? piso.planta : undefined;
+        currentPisoPlanta = planta;
 
         if (currentTicket && currentTicket.id && planta !== undefined) {
             await actualizarTicket(currentTicket.id, undefined, undefined, planta);
@@ -254,17 +261,24 @@ async function cargarPalcos(pisoID) {
             return;
         }
         const ocupados = await fetchPalcosOcupados(currentEvent.eventoId);
-        if (selectedPalco) {
-            const palco = (palcos || []).find(p => p.id === selectedPalco);
-            if (palco) selectedPalcoPrecio = palco.precio;
+        if (selectedPalcoNumero) {
+            const palco = (palcos || []).find(p => String(p.numero) === String(selectedPalcoNumero));
+            if (palco) {
+                selectedPalco = palco.id;
+                selectedPalcoPrecio = palco.precio;
+            } else {
+                selectedPalco = null;
+                selectedPalcoNumero = null;
+                selectedPalcoPrecio = 0;
+            }
         }
         container.innerHTML = palcos.map(p => {
-            const vendido = ocupados.includes(p.id);
+            const vendido = ocupados.includes(String(p.numero));
             return `
                 <div class="palco-card${selectedPalco === p.id ? ' selected' : ''}${vendido ? ' sold' : ''}"
                      onclick="${vendido ? '' : `seleccionarPalco('${p.id}')`}">
                     <div class="palco-info">
-                        <div class="palco-nombre">Palco ${p.id.substring(0, 8)}</div>
+                        <div class="palco-nombre">Palco ${p.numero || '?'}</div>
                         <div class="palco-asientos">${p.asientos} asientos</div>
                         <div class="palco-precio">€${p.precio}</div>
                     </div>
@@ -290,10 +304,11 @@ async function fetchPalcosOcupados(eventoID) {
         return [];
     }
 }
-
+ 
 window.seleccionarPalco = async function(palcoID) {
     if (selectedPalco === palcoID) {
         selectedPalco = null;
+        selectedPalcoNumero = null;
         selectedPalcoPrecio = 0;
     } else {
         selectedPalco = palcoID;
@@ -302,8 +317,10 @@ window.seleccionarPalco = async function(palcoID) {
             const palcos = await r.json();
             const palco = (palcos || []).find(p => p.id === palcoID);
             selectedPalcoPrecio = palco ? palco.precio : 0;
+            selectedPalcoNumero = palco ? palco.numero : null;
         } catch {
             selectedPalcoPrecio = 0;
+            selectedPalcoNumero = null;
         }
     }
     cargarPalcos(selectedPisoID);
@@ -379,7 +396,7 @@ function generateSeatGrid() {
 async function guardarTicket() {
     if (!currentTicket || !currentTicket.id) return;
     const partes = [];
-    if (selectedPalco) partes.push(`PALCO-${selectedPalco}`);
+    if (selectedPalcoNumero) partes.push(`PALCO-${selectedPalcoNumero}`);
     if (selectedSeats.length > 0) partes.push(selectedSeats.join(', '));
     const asientos = partes.join(', ');
     const piso = pisos.find(p => p.id === selectedPisoID);
@@ -430,7 +447,7 @@ function updateSummary() {
     if (selectedPalco) {
         const tag = document.createElement('span');
         tag.className = 'seat-tag';
-        tag.textContent = `Palco ${selectedPalco.substring(0, 8)} - ${pisos.find(p => p.id === selectedPisoID)?.planta || ''}`;
+        tag.textContent = `Palco ${selectedPalcoNumero || '?'} - Planta ${pisos.find(p => p.id === selectedPisoID)?.planta || ''}`;
         selectedSeatsList.appendChild(tag);
     }
 
@@ -508,20 +525,18 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha, sit
     if (ticketExistente && ticketExistente.id) {
         currentTicket = ticketExistente;
         selectedPalco = null;
+        selectedPalcoNumero = null;
         selectedPalcoPrecio = 0;
         selectedSeats = [];
         if (ticketExistente.asientos) {
             const parts = ticketExistente.asientos.split(',').map(s => s.trim()).filter(s => s);
             parts.forEach(p => {
                 if (p.startsWith('PALCO-')) {
-                    selectedPalco = p.replace('PALCO-', '');
+                    selectedPalcoNumero = p.replace('PALCO-', '');
                 } else {
                     selectedSeats.push(p);
                 }
             });
-            if (selectedPalco) {
-                cargarPalcoPrecio(selectedPalco);
-            }
         }
     } else {
         const result = await crearTicket(usuarioID, '', eventoId, fecha, duracion);
@@ -550,6 +565,7 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha, sit
         document.getElementById('seatsSubtitle').textContent = 'Sin ubicación';
     }
     
+    suscribirEventoRealtime(eventoId);
     updateSummary();
 };
 
@@ -613,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pisos = [];
         selectedPisoID = null;
         selectedPalco = null;
+        selectedPalcoNumero = null;
         selectedPalcoPrecio = 0;
         
         const dateSelectedEl = document.getElementById('dateSelected');
@@ -624,6 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const step3 = document.getElementById('step3');
         if (step3) step3.classList.add('hidden');
+        unsuscribirRealtime();
     });
 
     const confirmBtns = document.querySelectorAll('#confirmPurchase');
@@ -653,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = 'Procesando...';
 
             const asientosParaPago = [];
-            if (selectedPalco) asientosParaPago.push(`PALCO-${selectedPalco}`);
+            if (selectedPalcoNumero) asientosParaPago.push(`PALCO-${selectedPalcoNumero}`);
             if (selectedSeats.length > 0) asientosParaPago.push(selectedSeats.join(', '));
             const asientosStr = asientosParaPago.join(', ');
 
@@ -722,7 +740,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fetchStripeKey();
+    iniciarRealtime();
 });
+
+async function iniciarRealtime() {
+    try {
+        const cfg = await fetch(`${API_BASE}/config`).then(r => r.json());
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.97.0');
+        supabaseRealtime = createClient(cfg.supabaseUrl, cfg.supabasePublishableKey);
+        realtimeUsuarioID = localStorage.getItem('usuarioId');
+    } catch (e) {
+        console.warn('No se pudo iniciar Realtime:', e);
+    }
+}
+
+function suscribirEventoRealtime(eventoID) {
+    if (!supabaseRealtime || !eventoID) return;
+    unsuscribirRealtime();
+    realtimeChannel = supabaseRealtime
+        .channel(`evento-${eventoID}`)
+        .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'BDTicket', filter: `eventoID=eq.${eventoID}` },
+            (payload) => {
+                if (realtimeUsuarioID && payload.new?.usuarioID === realtimeUsuarioID) {
+                    if (payload.eventType === 'UPDATE' && payload.old?.confirmado === false && payload.new?.confirmado === true) {
+                    } else {
+                        return;
+                    }
+                }
+                if (realtimeUsuarioID && payload.old?.usuarioID === realtimeUsuarioID) return;
+                if (currentPisoPlanta !== undefined) {
+                    cargarAsientosOcupados(eventoID, currentPisoPlanta);
+                    cargarPalcos(selectedPisoID);
+                }
+            }
+        )
+        .subscribe();
+}
+
+function unsuscribirRealtime() {
+    if (realtimeChannel) {
+        supabaseRealtime.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+    }
+}
 
 async function cargarEventosPorFecha(fecha) {
     const eventos = await fetchEventosPorFecha(fecha);

@@ -25,9 +25,19 @@ export const crearPalco = async (req: Request, res: Response) => {
     }
 
     try {
+        const { data: maxPalco } = await supabase
+            .from(tablaPalco)
+            .select('numero')
+            .eq('pisoID', pisoID)
+            .order('numero', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        const numero = (maxPalco?.numero ?? 0) + 1;
+
         const { data, error } = await supabase
             .from(tablaPalco)
-            .insert({ asientos, precio, pisoID })
+            .insert({ asientos, precio, pisoID, numero })
             .select()
             .single();
 
