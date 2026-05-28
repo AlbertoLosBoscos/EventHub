@@ -102,6 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('formCrearSitio').addEventListener('submit', crearSitio);
 
+    const filtroEmail = document.getElementById('filtroUsuariosEmail');
+    if (filtroEmail) {
+        filtroEmail.addEventListener('input', () => cargarUsuarios());
+    }
+
     cargarUsuarios();
 });
 
@@ -114,9 +119,19 @@ function mostrarMensaje(id, texto, tipo) {
 async function cargarUsuarios() {
     try {
         const r = await fetch(`${API_BASE}/auth/usuarios`, { headers: authHeaders() });
-        const usuarios = await r.json();
+        let usuarios = await r.json();
         const container = document.getElementById('usuariosList');
         container.innerHTML = '';
+
+        const filtro = document.getElementById('filtroUsuariosEmail')?.value.toLowerCase().trim();
+        if (filtro) {
+            usuarios = usuarios.filter(u => u.email && u.email.toLowerCase().includes(filtro));
+        }
+
+        if (usuarios.length === 0) {
+            container.innerHTML = '<p style="color:var(--on-surface-variant);padding:1rem 0;">No se encontraron usuarios.</p>';
+            return;
+        }
 
         const currentUserId = localStorage.getItem('usuarioId');
 
