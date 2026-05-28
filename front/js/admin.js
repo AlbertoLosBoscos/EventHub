@@ -108,12 +108,17 @@ async function cargarUsuarios() {
         const container = document.getElementById('usuariosList');
         container.innerHTML = '';
 
+        const currentUserId = localStorage.getItem('usuarioId');
+
         usuarios.forEach(u => {
+            const esAdmin = u.rol === 'admin';
+            const esYo = u.id === currentUserId;
+
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
                 <div class="user-card-info">
-                    <p><strong>ID:</strong> ${u.id}</p>
+                    <p><strong>ID:</strong> ${u.id} ${esYo ? '(tú)' : ''}</p>
                     <p><strong>Email:</strong> ${u.email || '-'}</p>
                     <p><strong>Registrado:</strong> ${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</p>
                     <p><strong>Rol:</strong> <span id="rol-${u.id}">${u.rol}</span></p>
@@ -121,15 +126,16 @@ async function cargarUsuarios() {
                 </div>
                 <div class="user-card-actions">
                     <div>
-                        <select id="rolSelect-${u.id}" data-id="${u.id}">
+                        <select id="rolSelect-${u.id}" data-id="${u.id}" ${(esYo || esAdmin) ? 'disabled' : ''}>
                             <option value="client" ${u.rol === 'client' ? 'selected' : ''}>Client</option>
                             <option value="employee" ${u.rol === 'employee' ? 'selected' : ''}>Employee</option>
                             <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
                         </select>
+                        ${(esYo || esAdmin) ? '<small style="color:var(--error);font-size:11px;">no modificable</small>' : ''}
                     </div>
-                    <button class="${u.baneado ? 'btn-unban' : 'btn-ban'}" data-id="${u.id}">
+                    ${!esAdmin ? `<button class="${u.baneado ? 'btn-unban' : 'btn-ban'}" data-id="${u.id}">
                         ${u.baneado ? 'Desbanear' : 'Banear'}
-                    </button>
+                    </button>` : ''}
                 </div>
             `;
             container.appendChild(card);

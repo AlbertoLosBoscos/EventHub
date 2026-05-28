@@ -57,15 +57,19 @@ export const login = async (req: Request, res: Response) => {
 
     const userId = data.user.id;
     
-    const { data: roleData } = await supabase
+    const { data: userData } = await supabase
         .from('Auth_Users')
-        .select('rol')
+        .select('rol, baneado')
         .eq('id', userId)
         .maybeSingle();
 
+    if (userData?.baneado) {
+        return res.status(403).json({ mensaje: 'Tu cuenta ha sido suspendida. Contacta con el administrador.' });
+    }
+
     res.json({
         ...data,
-        role: roleData?.rol || 'client' 
+        role: userData?.rol || 'client' 
     }); 
 };
 
@@ -158,7 +162,24 @@ export const actualizarRol = async (req: Request, res: Response) => {
         res.status(400).json({ error: 'Rol inválido' });
         return;
     }
+
+    if (id === req.usuario?.id) {
+        res.status(403).json({ error: 'No puedes cambiar tu propio rol' });
+        return;
+    }
+
     try {
+        const { data: targetUser } = await supabase
+            .from('Auth_Users')
+            .select('rol')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (targetUser?.rol === 'admin') {
+            res.status(403).json({ error: 'No puedes cambiar el rol de otro administrador' });
+            return;
+        }
+
         const { data, error } = await supabase
             .from('Auth_Users')
             .upsert({ id, rol }, { onConflict: 'id' })
@@ -173,14 +194,25 @@ export const actualizarRol = async (req: Request, res: Response) => {
 
 export const toggleBan = async (req: Request, res: Response) => {
     const { id } = req.params;
+
+    if (id === req.usuario?.id) {
+        res.status(403).json({ error: 'No puedes banearte a ti mismo' });
+        return;
+    }
+
     try {
-        const { data: current } = await supabase
+        const { data: targetUser } = await supabase
             .from('Auth_Users')
-            .select('baneado')
+            .select('rol, baneado')
             .eq('id', id)
             .maybeSingle();
 
-        const nuevoBaneado = !current?.baneado;
+        if (targetUser?.rol === 'admin') {
+            res.status(403).json({ error: 'No puedes banear a otro administrador' });
+            return;
+        }
+
+        const nuevoBaneado = !targetUser?.baneado;
         const { data, error } = await supabase
             .from('Auth_Users')
             .upsert({ id, baneado: nuevoBaneado }, { onConflict: 'id' })
