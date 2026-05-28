@@ -3,6 +3,18 @@ import { supabase } from '../supabase';
 import rateLimit from 'express-rate-limit';
 import { createClient } from '@supabase/supabase-js';
 
+declare global {
+    namespace Express {
+        interface Request {
+            usuario?: {
+                id: string;
+                email: string;
+                rol: string;
+            };
+        }
+    }
+}
+
 const localhost = process.env.LOCAL_HOST || '';
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const serviceKey = process.env.SUPABASE_API_EVENTHUB || '';
