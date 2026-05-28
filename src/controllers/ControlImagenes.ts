@@ -1,12 +1,8 @@
-import { Router } from 'express';
-import multer from 'multer';
+import { Request, Response } from 'express';
 import { supabaseAdmin } from '../supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
-
-router.post('/imagen-evento', upload.single('imagen'), async (req, res) => {
+export const subirImagenEvento = async (req: Request, res: Response) => {
   try {
     const file = req.file;
     if (!file) {
@@ -37,6 +33,4 @@ router.post('/imagen-evento', upload.single('imagen'), async (req, res) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
-});
-
-export default router;
+};
