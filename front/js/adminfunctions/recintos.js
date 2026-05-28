@@ -39,17 +39,18 @@ async function cargarAnfiteatrosSelect(selectId) {
     }
 }
 
-async function cargarPisosSelect(selectId, soloLibres) {
+async function cargarPisosSelect(selectId, soloLibres, sitioID) {
     try {
         const url = soloLibres ? `${API_BASE}/pisos/sin-anfiteatro` : `${API_BASE}/pisos/mostrar`;
         const r = await fetch(url, { headers: soloLibres ? authAdminHeaders() : {} });
         const pisos = await r.json();
         const select = document.getElementById(selectId);
         select.innerHTML = '<option value="">-- Selecciona un piso --</option>';
-        (pisos || []).forEach(p => {
+        const filtrados = sitioID ? (pisos || []).filter(p => p.sitioID === sitioID) : (pisos || []);
+        filtrados.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
-            opt.textContent = `Planta ${p.planta} (Sitio: ${p.sitioID?.substring(0, 8)}...)`;
+            opt.textContent = `Planta ${p.planta}`;
             select.appendChild(opt);
         });
     } catch (e) {

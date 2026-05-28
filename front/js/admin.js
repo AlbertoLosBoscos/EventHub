@@ -56,7 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btn.dataset.subsection === 'crear-anfiteatro') {
                 cargarPisosSelect('inputAnfiPiso', true);
             } else if (btn.dataset.subsection === 'crear-palco') {
+                cargarSitiosSelect('inputPalcoSitio');
                 cargarPisosSelect('inputPalcoPiso');
+                document.getElementById('inputPalcoPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
             }
         });
     });
@@ -89,7 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cargarSitiosSelect('inputPisoSitio');
     cargarPisosSelect('inputAnfiPiso', true);
-    cargarPisosSelect('inputPalcoPiso');
+    cargarSitiosSelect('inputPalcoSitio');
+    document.getElementById('inputPalcoSitio').addEventListener('change', (e) => {
+        const sitioID = e.target.value;
+        if (sitioID) {
+            cargarPisosSelect('inputPalcoPiso', false, sitioID);
+        } else {
+            document.getElementById('inputPalcoPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+        }
+    });
     document.getElementById('formCrearSitio').addEventListener('submit', crearSitio);
 
     cargarUsuarios();
