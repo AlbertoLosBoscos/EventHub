@@ -294,6 +294,7 @@ if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {
         localStorage.removeItem('usuarioId');
         localStorage.removeItem('userRole');
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('token');
         window.location.href = '/guest';
     });
 }

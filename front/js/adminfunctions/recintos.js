@@ -1,3 +1,10 @@
+function authAdminHeaders() {
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
 async function cargarSitiosSelect(selectId) {
     try {
         const r = await fetch(`${API_BASE}/sitios/mostrar`);
@@ -35,7 +42,7 @@ async function cargarAnfiteatrosSelect(selectId) {
 async function cargarPisosSelect(selectId, soloLibres) {
     try {
         const url = soloLibres ? `${API_BASE}/pisos/sin-anfiteatro` : `${API_BASE}/pisos/mostrar`;
-        const r = await fetch(url);
+        const r = await fetch(url, { headers: soloLibres ? authAdminHeaders() : {} });
         const pisos = await r.json();
         const select = document.getElementById(selectId);
         select.innerHTML = '<option value="">-- Selecciona un piso --</option>';
@@ -56,10 +63,11 @@ async function crearSitio(e) {
         nombre: document.getElementById('inputSitioNombre').value,
         aforo: parseInt(document.getElementById('inputSitioAforo').value),
     };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/sitios/crear`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();
@@ -83,10 +91,11 @@ async function crearPiso(e) {
         planta: parseInt(document.getElementById('inputPisoPlanta').value),
         sitioID: document.getElementById('inputPisoSitio').value,
     };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/pisos/crear`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();
@@ -162,10 +171,11 @@ async function crearAnfiteatro(e) {
         asientosVips,
         pisoID: document.getElementById('inputAnfiPiso').value,
     };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/anfiteatros/crear`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();
@@ -190,10 +200,11 @@ async function crearPalco(e) {
         precio: parseFloat(document.getElementById('inputPalcoPrecio').value),
         pisoID: document.getElementById('inputPalcoPiso').value,
     };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/palcos/crear`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();

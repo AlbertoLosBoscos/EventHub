@@ -1,17 +1,20 @@
 import { Router } from 'express';
 import { verTickets, crearTicket, verTicketsPorUsuario, obtenerAsientosOcupados, actualizarTicket, obtenerTicketPorUsuarioYEvento, devolverEntradaCliente, devolverEntradaEmpleado, eliminarTicket, buscarTickets } from '../controllers/gestores/ControlTicket';
+import { verificarToken, soloAdmin, soloEmpleado } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/mostrar', verTickets);
-router.get('/por-usuario', verTicketsPorUsuario);
 router.get('/asientos-ocupados', obtenerAsientosOcupados);
-router.get('/por-usuario-y-evento', obtenerTicketPorUsuarioYEvento);
-router.post('/crear', crearTicket);
-router.put('/actualizar', actualizarTicket);
-router.get('/buscar', buscarTickets);
-router.post('/devolver-cliente', devolverEntradaCliente);
-router.post('/devolver-empleado', devolverEntradaEmpleado);
 router.post('/eliminar-expirados', eliminarTicket);
+
+router.get('/por-usuario', verificarToken, verTicketsPorUsuario);
+router.get('/por-usuario-y-evento', verificarToken, obtenerTicketPorUsuarioYEvento);
+router.post('/crear', verificarToken, crearTicket);
+router.put('/actualizar', verificarToken, actualizarTicket);
+router.post('/devolver-cliente', verificarToken, devolverEntradaCliente);
+
+router.get('/mostrar', verificarToken, soloAdmin, verTickets);
+router.get('/buscar', verificarToken, soloEmpleado, buscarTickets);
+router.post('/devolver-empleado', verificarToken, soloEmpleado, devolverEntradaEmpleado);
 
 export default router;

@@ -23,6 +23,7 @@ formLogin.addEventListener('submit', async (e) => {
             localStorage.setItem('usuarioId', datos.user.id);
             localStorage.setItem('userEmail', email);
             if (datos.role) localStorage.setItem('userRole', datos.role);
+            if (datos.session?.access_token) localStorage.setItem('token', datos.session.access_token);
             window.location.href = '/main'; 
         } else {
             throw new Error(datos.mensaje || "Credenciales incorrectas o correo no verificado");
@@ -96,6 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 if (uid) {
                     localStorage.setItem('usuarioId', uid);
+                    localStorage.setItem('token', accessToken);
                     fetch('/api/auth/verificar-usuario-oauth', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

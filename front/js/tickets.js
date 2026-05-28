@@ -1,5 +1,12 @@
 const API_BASE = 'http://localhost:3000/api';
 
+function authHeaders() {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
 function formatearAsientos(asientos) {
     if (!asientos) return 'Ninguno';
     return asientos.split(',').map(s => s.trim()).filter(s => s).map(s => {
@@ -43,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('usuarioId');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userEmail');
+            localStorage.removeItem('token');
             window.location.href = '/guest';
         });
     }
@@ -56,7 +64,7 @@ async function cargarMisTickets() {
     }
 
     try {
-        const r = await fetch(`${API_BASE}/tickets/por-usuario?usuarioID=${usuarioID}`);
+        const r = await fetch(`${API_BASE}/tickets/por-usuario?usuarioID=${usuarioID}`, { headers: authHeaders() });
         const tickets = await r.json();
         const container = document.getElementById('ticketsList');
         container.innerHTML = '';
@@ -110,7 +118,7 @@ async function cargarMisTickets() {
                 try {
                     const r = await fetch(`${API_BASE}/tickets/devolver-cliente`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: authHeaders(),
                         body: JSON.stringify({ ticketID }),
                     });
                     const data = await r.json();
@@ -142,7 +150,7 @@ async function cargarTodosTickets() {
     if (email) url += `email=${encodeURIComponent(email)}&`;
 
     try {
-        const r = await fetch(url);
+        const r = await fetch(url, { headers: authHeaders() });
         const tickets = await r.json();
         container.innerHTML = '';
 
@@ -193,7 +201,7 @@ async function cargarTodosTickets() {
                 try {
                     const r = await fetch(`${API_BASE}/tickets/devolver-cliente`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: authHeaders(),
                         body: JSON.stringify({ ticketID }),
                     });
                     const data = await r.json();

@@ -1,5 +1,12 @@
 const API_BASE = 'http://localhost:3000/api';
 
+function authHeaders() {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const usuarioId = localStorage.getItem('usuarioId');
     const userRole = localStorage.getItem('userRole');
@@ -96,7 +103,7 @@ function mostrarMensaje(id, texto, tipo) {
 
 async function cargarUsuarios() {
     try {
-        const r = await fetch(`${API_BASE}/auth/usuarios`);
+        const r = await fetch(`${API_BASE}/auth/usuarios`, { headers: authHeaders() });
         const usuarios = await r.json();
         const container = document.getElementById('usuariosList');
         container.innerHTML = '';
@@ -135,7 +142,7 @@ async function cargarUsuarios() {
                 try {
                     await fetch(`${API_BASE}/auth/usuarios/${id}/rol`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: authHeaders(),
                         body: JSON.stringify({ rol }),
                     });
                     document.getElementById(`rol-${id}`).textContent = rol;
@@ -149,6 +156,7 @@ async function cargarUsuarios() {
                 try {
                     const r = await fetch(`${API_BASE}/auth/usuarios/${id}/ban`, {
                         method: 'PUT',
+                        headers: authHeaders(),
                     });
                     if (r.ok) {
                         cargarUsuarios();

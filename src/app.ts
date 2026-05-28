@@ -51,6 +51,7 @@ app.get('/api/auth/callback', (req, res) => {
         var uid = payload.sub;
         var email = payload.email || '';
         if (uid) {
+          localStorage.setItem('token', accessToken);
           localStorage.setItem('usuarioId', uid);
           localStorage.setItem('userEmail', email);
           fetch('/api/auth/verificar-usuario-oauth', {

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { magicLink, registro, login, loginConGithub, loginConGoogle, loginLimiter, registroLimiter, listarUsuarios, actualizarRol, toggleBan } from '../controllers/Authentification';
+import { verificarToken, soloAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -10,8 +11,8 @@ router.post('/magic-link', magicLink);
 router.post('/register', registroLimiter, registro);
 router.post('/login', loginLimiter, login);
 
-router.get('/usuarios', listarUsuarios);
-router.put('/usuarios/:id/rol', actualizarRol);
-router.put('/usuarios/:id/ban', toggleBan);
+router.get('/usuarios', verificarToken, soloAdmin, listarUsuarios);
+router.put('/usuarios/:id/rol', verificarToken, soloAdmin, actualizarRol);
+router.put('/usuarios/:id/ban', verificarToken, soloAdmin, toggleBan);
 
 export default router;

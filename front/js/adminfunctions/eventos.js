@@ -1,3 +1,10 @@
+function authAdminHeaders() {
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
 async function cargarEventosSelect(selectId, mostrarSitio, futurosOnly) {
     try {
         const [rEventos, rSitios] = await Promise.all([
@@ -31,8 +38,11 @@ async function cargarEventosSelect(selectId, mostrarSitio, futurosOnly) {
 async function subirImagen(file) {
     const formData = new FormData();
     formData.append('imagen', file);
+    const headers = authAdminHeaders();
+    delete headers['Content-Type'];
     const r = await fetch(`${API_BASE}/imagenes/imagen-evento`, {
         method: 'POST',
+        headers,
         body: formData,
     });
     const data = await r.json();
@@ -64,10 +74,11 @@ async function crearEvento(e) {
         duracion: parseInt(document.getElementById('inputDuracion').value),
         imagen: imagenUrl || undefined,
     };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/eventos/crear`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();
@@ -93,7 +104,10 @@ async function eliminarEvento() {
     }
     if (!confirm('¿Seguro que quieres eliminar este evento?')) return;
     try {
-        const r = await fetch(`${API_BASE}/eventos/eliminar/${eventoId}`, { method: 'DELETE' });
+        const r = await fetch(`${API_BASE}/eventos/eliminar/${eventoId}`, {
+            method: 'DELETE',
+            headers: authAdminHeaders(),
+        });
         const data = await r.json();
         if (r.ok) {
             mostrarMensaje('mensajeEliminar', 'Evento eliminado con éxito', 'success');
@@ -165,10 +179,11 @@ async function guardarEdicion(e) {
     };
     if (imagenUrl) body.imagen = imagenUrl;
 
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
         const r = await fetch(`${API_BASE}/eventos/actualizar/${eventoId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await r.json();
