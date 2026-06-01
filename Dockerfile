@@ -1,12 +1,7 @@
 FROM node:20-alpine
-
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
-
 COPY . .
-
 EXPOSE 3000
-
-CMD npx ts-node --transpile-only --compiler-options '{"moduleResolution":"NodeNext","module":"NodeNext"}' src/app.ts
+CMD ["npm", "run", "dev"]
