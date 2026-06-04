@@ -26,7 +26,11 @@ formLogin.addEventListener('submit', async (e) => {
             localStorage.setItem('userEmail', email);
             if (datos.role) localStorage.setItem('userRole', datos.role);
             if (datos.session?.access_token) localStorage.setItem('token', datos.session.access_token);
-            window.location.href = '/main'; 
+            if (datos.role === 'admin') {
+                window.location.href = '/adminmain';
+            } else {
+                window.location.href = '/main';
+            }
         } else {
             throw new Error(datos.mensaje || "Credenciales incorrectas o correo no verificado");
         }

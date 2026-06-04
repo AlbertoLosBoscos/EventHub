@@ -116,6 +116,10 @@ app.get('/registro', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/register.html')); 
 });
 
+app.get('/adminmain', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/adminmain.html'));
+});
+
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/admin.html'));
 });

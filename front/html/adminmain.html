@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">EventHub</div>
+            <nav class="nav">
+                <a href="/admin" class="nav-link">Administración</a>
+                <a href="/tickets" class="nav-link">Tickets</a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="userEmail"></span>
+                <button class="btn-primary">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="steps-indicator">
+            <div class="step" id="stepIndicator1">
+                <div class="step-number step-number-active">1</div>
+                <span class="step-label">Fechas</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="stepIndicator2">
+                <div class="step-number step-number-active">2</div>
+                <span class="step-label">Evento</span>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="content-main">
+                <section class="date-summary">
+                    <div class="date-summary-content">
+                        <p class="step-indicator">Selecciona un Rango de Fechas</p>
+                        <div class="date-range">
+                            <input type="date" id="dateInputInicio" class="date-input">
+                            <span class="date-range-sep">a</span>
+                            <input type="date" id="dateInputFin" class="date-input">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="events-section">
+                    <div class="events-header">
+                        <h2 class="events-title">Eventos</h2>
+                        <span class="events-count" id="eventsCount">0 eventos disponibles</span>
+                    </div>
+                    <div class="events-grid" id="eventsContainer">
+                        <div class="event-card event-card-disabled">
+                            <div class="event-image event-image-placeholder"></div>
+                            <div class="event-info">
+                                <h3 class="event-name">No hay eventos</h3>
+                                <p class="event-location">Selecciona un rango</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="event-detail hidden" id="eventDetail">
+                    <div class="detail-header">
+                        <h2 id="detailNombre"></h2>
+                        <button class="btn-back" id="btnCerrarDetalle">Cerrar</button>
+                    </div>
+                    <div class="detail-body">
+                        <div class="detail-image" id="detailImage"></div>
+                        <div class="detail-info">
+                            <div class="detail-field"><span class="detail-label">ID:</span> <span id="detailID"></span></div>
+                            <div class="detail-field"><span class="detail-label">Nombre:</span> <span id="detailNombre"></span></div>
+                            <div class="detail-field"><span class="detail-label">Descripción:</span> <span id="detailDescripcion"></span></div>
+                            <div class="detail-field"><span class="detail-label">Sitio:</span> <span id="detailSitio"></span></div>
+                            <div class="detail-field"><span class="detail-label">Fecha:</span> <span id="detailFecha"></span></div>
+                            <div class="detail-field"><span class="detail-label">Compañía:</span> <span id="detailCompania"></span></div>
+                            <div class="detail-field"><span class="detail-label">Duración:</span> <span id="detailDuracion"></span></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">© 2024 EventHub. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="#">Privacidad</a>
+                <a href="#">Términos</a>
+                <a href="#">Ayuda</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/adminmain.js"></script>
+</body>
+</html>

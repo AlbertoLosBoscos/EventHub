@@ -132,6 +132,12 @@ function updateStepIndicator(step) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const userRole = localStorage.getItem('userRole');
+
+    if (userRole === 'admin') {
+        window.location.href = '/adminmain';
+        return;
+    }
+
     const isStaff = userRole === 'admin' || userRole === 'employee';
     const adminLink = document.getElementById('adminLink');
     const navMisTickets = document.getElementById('navMisTickets');
