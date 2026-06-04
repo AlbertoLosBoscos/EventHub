@@ -38,8 +38,8 @@ Content-Type: application/json
   "duracion": 120
 }
 
-### Ver eventos por fecha específica
-GET http://localhost:3000/api/eventos/por-fecha?fecha={{$localDatetime 'YYYY-MM-DD'}}
+### Ver eventos por rango de fechas
+GET http://localhost:3000/api/eventos/por-fecha?fechaInicio=2026-06-01&fechaFin=2026-06-30
 
 ### Ver detalles de un evento específico
 GET http://localhost:3000/api/eventos/detalles/123e4567-e89b-12d3-a456-426614174000

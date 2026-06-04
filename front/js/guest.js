@@ -1,8 +1,8 @@
 const API_BASE = 'http://localhost:3000/api';
 
-async function fetchEventosPorFecha(fecha) {
+async function fetchEventosPorRango(fechaInicio, fechaFin) {
     try {
-        const response = await fetch(`${API_BASE}/eventos/por-fecha?fecha=${fecha}`);
+        const response = await fetch(`${API_BASE}/eventos/por-fecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
         if (!response.ok) throw new Error('Error al obtener eventos');
         return await response.json();
     } catch (error) {
@@ -16,7 +16,7 @@ function renderizarEventos(eventos) {
     const countEl = document.getElementById('eventsCount');
     
     if (!eventos || eventos.length === 0) {
-        container.innerHTML = '<p class="no-events">No hay eventos disponibles para esta fecha.</p>';
+        container.innerHTML = '<p class="no-events">No hay eventos disponibles en este rango de fechas.</p>';
         countEl.textContent = '0 eventos disponibles';
         return;
     }
@@ -41,29 +41,36 @@ function renderizarEventos(eventos) {
     `).join('');
 }
 
-async function cargarEventosPorFecha(fecha) {
-    const eventos = await fetchEventosPorFecha(fecha);
+async function cargarEventosPorRango(fechaInicio, fechaFin) {
+    const eventos = await fetchEventosPorRango(fechaInicio, fechaFin);
     renderizarEventos(eventos);
 }
 
-function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-    return date.toLocaleDateString('es-ES', options).replace(/^\w/, c => c.toUpperCase());
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    const dateInput = document.getElementById('dateInput');
+    const dateInicio = document.getElementById('dateInputInicio');
+    const dateFin = document.getElementById('dateInputFin');
     const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
-    dateInput.value = today;
+    const weekLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    document.getElementById('dateSelected').textContent = formatDate(today);
-    cargarEventosPorFecha(today);
+    dateInicio.min = today;
+    dateInicio.value = today;
+    dateFin.min = today;
+    dateFin.value = weekLater;
+    
+    cargarEventosPorRango(today, weekLater);
 
-    dateInput.addEventListener('change', async (e) => {
-        const fecha = e.target.value;
-        document.getElementById('dateSelected').textContent = formatDate(fecha);
-        await cargarEventosPorFecha(fecha);
-    });
+    function actualizarRango() {
+        const inicio = dateInicio.value;
+        const fin = dateFin.value;
+        if (!inicio || !fin) return;
+        if (fin < inicio) {
+            dateFin.value = inicio;
+            cargarEventosPorRango(inicio, inicio);
+            return;
+        }
+        cargarEventosPorRango(inicio, fin);
+    }
+
+    dateInicio.addEventListener('change', actualizarRango);
+    dateFin.addEventListener('change', actualizarRango);
 });

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { magicLink, registro, login, loginConGithub, loginConGoogle, loginLimiter, registroLimiter, listarUsuarios, actualizarRol, toggleBan } from '../controllers/Authentification';
+import { magicLink, registro, login, loginConGithub, loginConGoogle, loginLimiter, registroLimiter, listarUsuarios, actualizarRol, toggleBan, recuperarContrasena, actualizarContrasena } from '../controllers/Authentification';
 import { verificarToken, soloAdmin } from '../middleware/auth';
 
 const router = Router();
@@ -7,6 +7,8 @@ const router = Router();
 router.get('/login/github', loginConGithub); 
 router.get('/login/google', loginConGoogle); 
 router.post('/magic-link', magicLink);
+router.post('/recuperar-contrasena', recuperarContrasena);
+router.post('/actualizar-contrasena', actualizarContrasena);
 
 router.post('/register', registroLimiter, registro);
 router.post('/login', loginLimiter, login);

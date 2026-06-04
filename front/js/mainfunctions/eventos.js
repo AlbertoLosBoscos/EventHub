@@ -1,6 +1,6 @@
-async function fetchEventosPorFecha(fecha) {
+async function fetchEventosPorRango(fechaInicio, fechaFin) {
     try {
-        const response = await fetch(`${API_BASE}/eventos/por-fecha?fecha=${fecha}`);
+        const response = await fetch(`${API_BASE}/eventos/por-fecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
         if (!response.ok) throw new Error('Error al obtener eventos');
         return await response.json();
     } catch (error) {
@@ -14,7 +14,7 @@ function renderizarEventos(eventos) {
     const countEl = document.getElementById('eventsCount');
 
     if (!eventos || eventos.length === 0) {
-        container.innerHTML = '<p class="no-events">No hay eventos disponibles para esta fecha.</p>';
+        container.innerHTML = '<p class="no-events">No hay eventos disponibles en este rango de fechas.</p>';
         countEl.textContent = '0 eventos disponibles';
         return;
     }
@@ -38,8 +38,8 @@ function renderizarEventos(eventos) {
     `).join('');
 }
 
-async function cargarEventosPorFecha(fecha) {
-    const eventos = await fetchEventosPorFecha(fecha);
+async function cargarEventosPorRango(fechaInicio, fechaFin) {
+    const eventos = await fetchEventosPorRango(fechaInicio, fechaFin);
     renderizarEventos(eventos);
 }
 

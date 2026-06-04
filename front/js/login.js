@@ -2,8 +2,10 @@ const formLogin = document.getElementById('formLogin');
 const mensajeError = document.getElementById('mensajeError');
 const btnRegistro = document.getElementById('btnRegistro');
 const btnGitHub = document.getElementById('btnGitHub');
+const btnGoogle = document.getElementById('btnGoogle');
 const btnMagicLink = document.getElementById('btnMagicLink');
 const btnSalir = document.getElementById('btnSalir');
+const btnRecuperar = document.getElementById('btnRecuperar');
 
 formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -49,6 +51,35 @@ btnGoogle.addEventListener('click', () => {
 
 btnSalir.addEventListener('click', () => {
     window.location.href = '/guest';
+});
+
+btnRecuperar.addEventListener('click', async () => {
+    const email = document.getElementById('emailUsuario').value;
+
+    if (!email) {
+        mensajeError.style.display = 'block';
+        mensajeError.textContent = 'Introduce tu email primero.';
+        return;
+    }
+
+    try {
+        const res = await fetch('http://localhost:3000/api/auth/recuperar-contrasena', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const datos = await res.json();
+        if (res.ok) {
+            alert(datos.mensaje);
+        } else {
+            mensajeError.style.display = 'block';
+            mensajeError.textContent = datos.error;
+        }
+    } catch (error) {
+        mensajeError.style.display = 'block';
+        mensajeError.textContent = 'Error de conexión.';
+    }
 });
 
 btnMagicLink.addEventListener('click', async () => {

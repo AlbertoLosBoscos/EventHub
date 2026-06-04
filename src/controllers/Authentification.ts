@@ -125,6 +125,40 @@ export const loginConGithub = async (req: Request, res: Response) => {
   }
 };
 
+export const actualizarContrasena = async (req: Request, res: Response) => {
+  const { password } = req.body;
+  const authHeader = req.headers.authorization;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token de recuperación requerido' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const supabaseUser = createClient(
+    process.env.SUPABASE_URL || '',
+    process.env.SUPABASE_KEY || process.env.SUPABASE_API_EVENTHUB || '',
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+
+  const { error } = await supabaseUser.auth.updateUser({ password });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ mensaje: 'Contraseña actualizada correctamente' });
+};
+
+export const recuperarContrasena = async (req: Request, res: Response) => {
+  const email = req.body.email?.toString().trim().toLowerCase();
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${localhost}/recuperar-contrasena`,
+  });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ mensaje: 'Correo de recuperación enviado. Revisa tu bandeja de entrada.' });
+};
+
 export const magicLink = async (req: Request, res: Response) => {
     const email = req.body.email?.toString().trim().toLowerCase();
     const { error } = await supabase.auth.signInWithOtp({
@@ -235,4 +269,4 @@ export const toggleBan = async (req: Request, res: Response) => {
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
-};
+}

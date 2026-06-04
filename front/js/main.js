@@ -152,19 +152,30 @@ document.addEventListener('DOMContentLoaded', () => {
         navMisTickets.style.display = isStaff ? 'none' : 'inline';
     }
 
-    const dateInput = document.getElementById('dateInput');
+    const dateInicio = document.getElementById('dateInputInicio');
+    const dateFin = document.getElementById('dateInputFin');
     const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
-    dateInput.value = today;
+    const weekLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    dateInicio.min = today;
+    dateInicio.value = today;
+    dateFin.min = today;
+    dateFin.value = weekLater;
 
     currentDate = today;
-    document.getElementById('dateSelected').textContent = formatDate(today);
-    cargarEventosPorFecha(today);
+    cargarEventosPorRango(today, weekLater);
 
-    dateInput.addEventListener('change', async (e) => {
-        const fecha = e.target.value;
+    function actualizarRango() {
+        const inicio = dateInicio.value;
+        const fin = dateFin.value;
+        if (!inicio || !fin) return;
+        if (fin < inicio) {
+            dateFin.value = inicio;
+            cargarEventosPorRango(inicio, inicio);
+            return;
+        }
 
-        currentDate = fecha;
+        currentDate = inicio;
         selectedSeats = [];
         currentEvent = null;
         currentSitioID = null;
@@ -175,17 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedPalcoNumero = null;
         selectedPalcoPrecio = 0;
 
-        const dateSelectedEl = document.getElementById('dateSelected');
-        if (dateSelectedEl) {
-            dateSelectedEl.textContent = formatDate(fecha);
-        }
-
-        await cargarEventosPorFecha(fecha);
+        cargarEventosPorRango(inicio, fin);
 
         const step3 = document.getElementById('step3');
         if (step3) step3.classList.add('hidden');
         unsuscribirRealtime();
-    });
+    }
+
+    dateInicio.addEventListener('change', actualizarRango);
+    dateFin.addEventListener('change', actualizarRango);
 
     const confirmBtns = document.querySelectorAll('#confirmPurchase');
     confirmBtns.forEach(confirmBtn => {
@@ -280,11 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarRealtime();
 });
 
-function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-    return date.toLocaleDateString('es-ES', options).replace(/^\w/, c => c.toUpperCase());
-}
 
 document.getElementById('step3').classList.add('hidden');
 

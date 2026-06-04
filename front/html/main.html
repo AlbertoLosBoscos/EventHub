@@ -54,9 +54,12 @@
             <div class="content-main">
                 <section class="date-summary">
                     <div class="date-summary-content">
-                        <p class="step-indicator">Paso 1: Selecciona una Fecha</p>
-                        <input type="date" id="dateInput" class="date-input">
-                        <h2 class="date-selected" id="dateSelected"></h2>
+                        <p class="step-indicator">Paso 1: Selecciona un Rango de Fechas</p>
+                        <div class="date-range">
+                            <input type="date" id="dateInputInicio" class="date-input">
+                            <span class="date-range-sep">a</span>
+                            <input type="date" id="dateInputFin" class="date-input">
+                        </div>
                     </div>
                 </section>
 

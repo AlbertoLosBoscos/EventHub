@@ -114,22 +114,19 @@ export const eliminarEvento = async (req: Request, res: Response) => {
 }
 
 export const verEventosPorFecha = async (req: Request, res: Response) => {
-    const { fecha } = req.query;
+    const { fechaInicio, fechaFin } = req.query;
     
-    if (!fecha) {
-        res.status(400).json({ error: 'Falta la fecha' });
+    if (!fechaInicio || !fechaFin) {
+        res.status(400).json({ error: 'Faltan fechaInicio y fechaFin' });
         return;
     }
 
     try {
-        const fechaInicio = fecha as string;
-        const fechaFin = fecha as string + 'T23:59:59';
-
         const { data, error } = await supabase
             .from(tablaEvento)
             .select('*')
-            .gte('fecha', fechaInicio)
-            .lte('fecha', fechaFin)
+            .gte('fecha', fechaInicio as string)
+            .lte('fecha', fechaFin as string + 'T23:59:59')
             .order('fecha', { ascending: true });
 
         if (error) throw error;

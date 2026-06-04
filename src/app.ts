@@ -108,6 +108,10 @@ app.get('/guest', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/guest.html'));
 });
 
+app.get('/recuperar-contrasena', (req, res) => {
+    res.sendFile(path.join(__dirname, '../front/html/reset-password.html'));
+});
+
 app.get('/registro', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/html/register.html')); 
 });
