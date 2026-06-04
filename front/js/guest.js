@@ -23,6 +23,8 @@ function renderizarEventos(eventos) {
 
     countEl.textContent = `${eventos.length} eventos disponibles`;
     
+    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '✅ Terminado', cancelado: '❌ Cancelado' };
+
     container.innerHTML = eventos.map(evento => `
         <div class="event-card">
             <div class="event-image">
@@ -35,6 +37,7 @@ function renderizarEventos(eventos) {
                 <p class="event-date">📅 ${new Date(evento.fecha).toLocaleString('es-ES')}</p>
                 <div class="event-footer">
                     <span class="event-price">€${evento.precio || '45.00'}</span>
+                    <span class="event-badge estado-${evento.estado || 'disponible'}">${badgeMap[evento.estado] || '✅ Disponible'}</span>
                 </div>
             </div>
         </div>

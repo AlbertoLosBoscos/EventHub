@@ -137,6 +137,7 @@ async function cargarEventoEnFormulario() {
         }
         document.getElementById('editCompania').value = ev.compania || '';
         document.getElementById('editDuracion').value = ev.duracion || '';
+        document.getElementById('editEstado').value = ev.estado || 'disponible';
 
         const preview = document.getElementById('editImagenPreview');
         if (ev.imagen) {
@@ -176,6 +177,7 @@ async function guardarEdicion(e) {
         fecha: new Date(fechaRaw).toISOString(),
         compania: document.getElementById('editCompania').value,
         duracion: parseInt(document.getElementById('editDuracion').value),
+        estado: document.getElementById('editEstado').value,
     };
     if (imagenUrl) body.imagen = imagenUrl;
 

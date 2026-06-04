@@ -58,6 +58,12 @@
                     <label>Fecha y hora <input type="datetime-local" id="editFecha" required></label>
                     <label>Compañía <input type="text" id="editCompania"></label>
                     <label>Duración (min) <input type="number" id="editDuracion" required></label>
+                    <label>Estado <select id="editEstado">
+                        <option value="disponible">Disponible</option>
+                        <option value="realizandose">En emisión</option>
+                        <option value="terminado">Terminado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select></label>
                     <label>Imagen <input type="file" id="editImagen" accept="image/*"></label>
                     <div id="editImagenPreview" style="margin-bottom:10px"></div>
                     <button type="submit">Guardar Cambios</button>

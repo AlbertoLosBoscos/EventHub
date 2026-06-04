@@ -13,6 +13,7 @@ import rutaPago from './routes/rutaPago';
 import rutaImagenes from './routes/rutaImagenes';
 import { supabase } from './supabase';
 import { eliminarTicketsExpiradosCron } from './controllers/gestores/ControlTicket';
+import { actualizarEstadosEventosCron } from './controllers/gestores/ControlEvento';
 
 dotenv.config();
 
@@ -185,6 +186,9 @@ const startServer = (port: number) => {
 
     setInterval(eliminarTicketsExpiradosCron, 3 * 60 * 1000);
     console.log('[Cron] Limpieza de tickets expirados cada 3 minutos');
+
+    setInterval(actualizarEstadosEventosCron, 3 * 60 * 1000);
+    console.log('[Cron] Estados de eventos cada 3 minutos');
 };
 
 startServer(Number(PORT));

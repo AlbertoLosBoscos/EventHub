@@ -31,7 +31,8 @@ export const crearEvento = async (req: Request, res: Response) => {
                 fecha, 
                 compania, 
                 duracion,
-                imagen: imagen || null })
+                imagen: imagen || null,
+                estado: 'disponible' })
             .select()
             .single();
 
@@ -69,7 +70,7 @@ export const verDetalles = async (req: Request, res: Response) => {
 
 export const actualizarEvento = async (req: Request, res: Response) => {
     const { eventoID } = req.params;
-    const { nombre, descripcion, sitioID, fecha, compania, duracion, imagen } = req.body;
+    const { nombre, descripcion, sitioID, fecha, compania, duracion, imagen, estado } = req.body;
     if (!eventoID) {
         res.status(400).json({ error: 'Falta el ID del evento' });
         return;
@@ -77,6 +78,7 @@ export const actualizarEvento = async (req: Request, res: Response) => {
     try {
         const updateData: any = { nombre, descripcion, sitioID, fecha, compania, duracion };
         if (imagen !== undefined) updateData.imagen = imagen;
+        if (estado !== undefined) updateData.estado = estado;
 
         const { data, error } = await supabase
             .from(tablaEvento)
@@ -90,6 +92,54 @@ export const actualizarEvento = async (req: Request, res: Response) => {
         res.json({ message: 'Evento actualizado con éxito', data });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
+    }
+}
+
+export const actualizarEstadosEventosCron = async () => {
+    try {
+        const { data: eventos, error } = await supabase
+            .from(tablaEvento)
+            .select('id, fecha, duracion, estado')
+            .neq('estado', 'cancelado');
+
+        if (error) throw error;
+        if (!eventos || eventos.length === 0) return;
+
+        const ahora = new Date();
+        const actualizaciones: { id: string; estado: string }[] = [];
+
+        for (const evento of eventos) {
+            const fechaEvento = new Date(evento.fecha);
+            const finEvento = new Date(fechaEvento.getTime() + evento.duracion * 60 * 1000);
+            const unaHoraAntes = new Date(fechaEvento.getTime() - 60 * 60 * 1000);
+
+            let nuevoEstado: string;
+
+            if (ahora >= finEvento) {
+                nuevoEstado = 'terminado';
+            } else if (ahora >= unaHoraAntes) {
+                nuevoEstado = 'realizandose';
+            } else {
+                nuevoEstado = 'disponible';
+            }
+
+            if (evento.estado !== nuevoEstado) {
+                actualizaciones.push({ id: evento.id, estado: nuevoEstado });
+            }
+        }
+
+        for (const upd of actualizaciones) {
+            await supabase
+                .from(tablaEvento)
+                .update({ estado: upd.estado })
+                .eq('id', upd.id);
+        }
+
+        if (actualizaciones.length > 0) {
+            console.log(`[Cron] Estados actualizados: ${actualizaciones.map(u => `${u.id.slice(0,8)}→${u.estado}`).join(', ')}`);
+        }
+    } catch (error: any) {
+        console.error('[Cron] Error al actualizar estados:', error.message);
     }
 }
 
@@ -114,7 +164,7 @@ export const eliminarEvento = async (req: Request, res: Response) => {
 }
 
 export const verEventosPorFecha = async (req: Request, res: Response) => {
-    const { fechaInicio, fechaFin } = req.query;
+    const { fechaInicio, fechaFin, estado } = req.query;
     
     if (!fechaInicio || !fechaFin) {
         res.status(400).json({ error: 'Faltan fechaInicio y fechaFin' });
@@ -122,12 +172,18 @@ export const verEventosPorFecha = async (req: Request, res: Response) => {
     }
 
     try {
-        const { data, error } = await supabase
+        let query = supabase
             .from(tablaEvento)
             .select('*')
             .gte('fecha', fechaInicio as string)
             .lte('fecha', fechaFin as string + 'T23:59:59')
             .order('fecha', { ascending: true });
+
+        if (estado) {
+            query = query.eq('estado', estado as string);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 

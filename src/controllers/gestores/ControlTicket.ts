@@ -1,5 +1,52 @@
 import { Request, Response } from 'express';
 import {supabase, supabaseAdmin} from '../../supabase'
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+    host: process.env.MAIL_HOST || '',
+    port: parseInt(process.env.MAIL_PORT || '587'),
+    secure: process.env.MAIL_SECURE === 'true',
+    auth: {
+        user: process.env.MAIL_USER || '',
+        pass: process.env.MAIL_PASS || '',
+    },
+});
+
+async function enviarCorreoDevolucion(
+    email: string,
+    ticketID: string,
+    eventoNombre: string,
+    asientos: string,
+    fecha: string
+) {
+    const from = process.env.MAIL_FROM || 'noreply@eventhub.com';
+    try {
+        await transporter.sendMail({
+            from,
+            to: email,
+            subject: 'Entrada devuelta correctamente - EventHub',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+                    <h2 style="color: #333;">Entrada Devuelta</h2>
+                    <p>Tu entrada ha sido devuelta correctamente.</p>
+                    <hr>
+                    <p><strong>Ticket:</strong> ${ticketID}</p>
+                    <p><strong>Evento:</strong> ${eventoNombre}</p>
+                    <p><strong>Asientos:</strong> ${asientos || 'Ninguno'}</p>
+                    <p><strong>Fecha del evento:</strong> ${fecha ? new Date(fecha).toLocaleString('es-ES') : '-'}</p>
+                    <hr>
+                    <p style="color: #666; font-size: 12px;">EventHub - Gestión de entradas</p>
+                </div>
+            `,
+        });
+        console.log(`Correo de devolución enviado a ${email}`);
+    } catch (error: any) {
+        console.error('Error al enviar correo de devolución:', error.message);
+    }
+}
 
 const tablaTicket = 'BDTicket';
 
@@ -275,7 +322,7 @@ export const devolverEntradaCliente = async (req: Request, res: Response) => {
     try {
         const { data: ticket } = await supabase
             .from(tablaTicket)
-            .select('fecha')
+            .select('*, BDEventos!inner(nombre)')
             .eq('id', ticketID)
             .maybeSingle();
 
@@ -294,12 +341,25 @@ export const devolverEntradaCliente = async (req: Request, res: Response) => {
             return;
         }
 
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(ticket.usuarioID);
+        const email = userData?.user?.email;
+
         const { error } = await supabase
             .from(tablaTicket)
             .delete()
             .eq('id', ticketID);
 
         if (error) throw error;
+
+        if (email) {
+            await enviarCorreoDevolucion(
+                email,
+                ticket.id,
+                ticket.BDEventos?.nombre || '-',
+                ticket.asientos || '',
+                ticket.fecha
+            );
+        }
 
         res.json({ message: 'Entrada devuelta con éxito' });
     } catch (error: any) {
@@ -316,7 +376,7 @@ export const devolverEntradaEmpleado = async (req: Request, res: Response) => {
     try {
         const { data: ticket, error: findError } = await supabase
             .from(tablaTicket)
-            .select('id, usuarioID, fecha')
+            .select('*, BDEventos!inner(nombre)')
             .eq('id', ticketID)
             .maybeSingle();
 
@@ -342,6 +402,14 @@ export const devolverEntradaEmpleado = async (req: Request, res: Response) => {
             .eq('id', ticketID);
 
         if (error) throw error;
+
+        await enviarCorreoDevolucion(
+            email,
+            ticket.id,
+            ticket.BDEventos?.nombre || '-',
+            ticket.asientos || '',
+            ticket.fecha
+        );
 
         res.json({ message: 'Entrada devuelta por el empleado con éxito' });
     } catch (error: any) {
