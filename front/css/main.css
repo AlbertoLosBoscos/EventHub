@@ -1084,6 +1084,18 @@ body {
     font-family: inherit;
 }
 
+.btn-ticket-pdf {
+    background-color: var(--tertiary, #6b4c8a);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-button);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
 .btn-ticket-devolver {
     background-color: var(--error);
     color: var(--on-error);

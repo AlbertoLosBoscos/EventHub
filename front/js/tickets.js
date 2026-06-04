@@ -98,6 +98,7 @@ async function cargarMisTickets() {
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
+                    <button class="btn-ticket-pdf" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Descargar PDF</button>
                     ${puedeDevolver ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
                 </div>
             `;
@@ -108,6 +109,13 @@ async function cargarMisTickets() {
             btn.addEventListener('click', () => {
                 const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
                 mostrarDetalleTicket(ticket);
+            });
+        });
+
+        container.querySelectorAll('.btn-ticket-pdf').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
+                descargarPDF(ticket);
             });
         });
 
@@ -181,6 +189,7 @@ async function cargarTodosTickets() {
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
+                    <button class="btn-ticket-pdf" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Descargar PDF</button>
                     ${puedeDevolver ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
                 </div>
             `;
@@ -191,6 +200,13 @@ async function cargarTodosTickets() {
             btn.addEventListener('click', () => {
                 const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
                 mostrarDetalleTicket(ticket);
+            });
+        });
+
+        container.querySelectorAll('.btn-ticket-pdf').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ticket = JSON.parse(decodeURIComponent(btn.dataset.ticket));
+                descargarPDF(ticket);
             });
         });
 
@@ -219,6 +235,48 @@ async function cargarTodosTickets() {
     } catch {
         container.innerHTML = '<p class="ticket-empty">Error al cargar tickets.</p>';
     }
+}
+
+function descargarPDF(ticket) {
+    const ventana = window.open('', '_blank');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Ticket ${ticket.id}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 40px; }
+                h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                .ticket-box { border: 2px dashed #666; padding: 30px; margin-top: 20px; border-radius: 8px; }
+                .field { margin: 8px 0; }
+                .label { font-weight: bold; color: #555; }
+                .value { color: #000; }
+                .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+                @media print { body { padding: 20px; } }
+            </style>
+        </head>
+        <body>
+            <h1>EventHub - Ticket</h1>
+            <div class="ticket-box">
+                <div class="field"><span class="label">ID:</span> <span class="value">${ticket.id}</span></div>
+                <div class="field"><span class="label">Evento:</span> <span class="value">${ticket.eventoNombre || '-'}</span></div>
+                <div class="field"><span class="label">Evento ID:</span> <span class="value">${ticket.eventoID || '-'}</span></div>
+                <div class="field"><span class="label">Email:</span> <span class="value">${ticket.usuarioEmail || '-'}</span></div>
+                <div class="field"><span class="label">Usuario ID:</span> <span class="value">${ticket.usuarioID || '-'}</span></div>
+                <div class="field"><span class="label">Planta:</span> <span class="value">${ticket.planta ?? '-'}</span></div>
+                <div class="field"><span class="label">Asientos:</span> <span class="value">${ticket.asientos || 'Ninguno'}</span></div>
+                <div class="field"><span class="label">Fecha evento:</span> <span class="value">${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</span></div>
+                <div class="field"><span class="label">Duración:</span> <span class="value">${ticket.duracion || '-'} min</span></div>
+                <div class="field"><span class="label">Estado:</span> <span class="value">${ticket.confirmado ? 'Confirmado' : 'Pendiente'}</span></div>
+                <div class="field"><span class="label">Creado:</span> <span class="value">${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</span></div>
+            </div>
+            <div class="footer">Generado por EventHub</div>
+            <script>window.print(); window.onafterprint = () => window.close(); <\/script>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
 }
 
 function mostrarDetalleTicket(ticket) {
