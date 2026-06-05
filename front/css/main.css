@@ -677,6 +677,12 @@ body {
     border-color: #F59E0B;
 }
 
+.seat-disabled {
+    background-color: #1565C0;
+    border-color: #0D47A1;
+    color: #fff;
+}
+
 .seat-selected {
     background-color: var(--primary);
     border-color: var(--primary);

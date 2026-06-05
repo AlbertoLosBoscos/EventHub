@@ -1,3 +1,61 @@
+let zonaRow = null;
+let zonaPriceMap = {};
+let zonaSeatMap = {};
+
+async function loadZonas() {
+    if (!currentAnfiteatro || !currentAnfiteatro.id) {
+        console.log('[Zonas] No anfiteatro, limpiando mapas');
+        zonaRow = null;
+        zonaPriceMap = {};
+        zonaSeatMap = {};
+        return;
+    }
+    try {
+        const r = await fetch(`${API_BASE}/zonas/mostrar/${currentAnfiteatro.id}`);
+        zonaRow = await r.json();
+        console.log('[Zonas] API response:', JSON.stringify(zonaRow));
+        if (!zonaRow || !zonaRow.id) {
+            console.log('[Zonas] Sin datos BDZona, precios por defecto');
+            zonaPriceMap = {};
+            zonaSeatMap = {};
+            return;
+        }
+
+        zonaPriceMap = {};
+        zonaSeatMap = {};
+
+        function parseSeats(val) {
+            if (Array.isArray(val)) return val;
+            try { return JSON.parse(val || '[]'); } catch { return []; }
+        }
+        const zoneFields = [
+            { seats: parseSeats(zonaRow.asientosVips), price: zonaRow.precioVips || 0, name: 'vip' },
+            { seats: parseSeats(zonaRow.Zona1), price: zonaRow.precioZona1 || 0, name: 'zona1' },
+            { seats: parseSeats(zonaRow.Zona2), price: zonaRow.precioZona2 || 0, name: 'zona2' },
+            { seats: parseSeats(zonaRow.Zona3), price: zonaRow.precioZona3 || 0, name: 'zona3' },
+            { seats: parseSeats(zonaRow.asientosDiscapacitados), price: 0, name: 'discapacitados' },
+        ];
+
+        zoneFields.forEach(z => {
+            (z.seats || []).forEach(seatId => {
+                zonaPriceMap[seatId] = z.price;
+                if (!zonaSeatMap[seatId]) zonaSeatMap[seatId] = [];
+                zonaSeatMap[seatId].push(z.name);
+            });
+        });
+    } catch (e) {
+        console.error('[Zonas] Error al cargar zonas:', e);
+        zonaPriceMap = {};
+        zonaSeatMap = {};
+    }
+}
+
+function getPrecioAsiento(seatId) {
+    const price = zonaPriceMap[seatId];
+    if (price !== undefined && price !== null) return Number(price);
+    return 45;
+}
+
 async function fetchAsientosOcupados(eventoID, usuarioID, planta) {
     try {
         let url = `${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}`;
@@ -43,13 +101,6 @@ async function cargarAsientosOcupados(eventoId, planta) {
     updateSummary();
 }
 
-function getPrecioAsiento(seatId) {
-    if (currentAnfiteatro && currentAnfiteatro.asientosVips && currentAnfiteatro.asientosVips.includes(seatId)) {
-        return currentAnfiteatro.precioVips || currentAnfiteatro.precio || 45;
-    }
-    return currentAnfiteatro?.precio || 45;
-}
-
 function toggleSeat(seatElement, seatId) {
     if (seatElement.classList.contains('seat-occupied') || seatElement.classList.contains('seat-tus-compras')) {
         return;
@@ -77,8 +128,11 @@ function generateSeatGrid() {
     if (!anfiteatro) return;
     const filas = anfiteatro.filas;
     const columnas = anfiteatro.columnas;
-    const asientosVacios = anfiteatro.asientosVacios || [];
-    const asientosVips = anfiteatro.asientosVips || [];
+    function parseSeats(val) {
+        if (Array.isArray(val)) return val;
+        try { return JSON.parse(val || '[]'); } catch { return []; }
+    }
+    const asientosVacios = parseSeats(anfiteatro.asientosVacios);
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     COL_LABELS = [];
     for (let i = 0; i < columnas; i++) {
@@ -123,15 +177,15 @@ function generateSeatGrid() {
             seat.dataset.seatId = seatId;
             seat.dataset.row = row;
             seat.dataset.col = COL_LABELS[col];
-            seat.dataset.isVip = asientosVips.includes(seatId) ? 'true' : 'false';
 
-            if (asientosVips.includes(seatId)) {
+            const seatZones = zonaSeatMap[seatId] || [];
+            if (seatZones.includes('vip')) {
                 seat.classList.add('seat-vip');
-                seat.addEventListener('click', () => toggleSeat(seat, seatId));
-            } else {
-                seat.addEventListener('click', () => toggleSeat(seat, seatId));
+            } else if (seatZones.includes('discapacitados')) {
+                seat.classList.add('seat-disabled');
             }
 
+            seat.addEventListener('click', () => toggleSeat(seat, seatId));
             seatGrid.appendChild(seat);
         }
     }
@@ -144,8 +198,12 @@ async function cargarAnfiteatro(pisoID) {
         if (!anfiteatros || anfiteatros.length === 0) {
             document.getElementById('seatGrid').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--on-surface-variant);padding:2rem">Este piso no tiene un anfiteatro configurado.</p>';
             currentAnfiteatro = null;
+            zonaRow = null;
+            zonaPriceMap = {};
+            zonaSeatMap = {};
         } else {
             currentAnfiteatro = anfiteatros[0];
+            await loadZonas();
             generateSeatGrid();
         }
         occupiedSeats = [];

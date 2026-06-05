@@ -11,6 +11,7 @@ import rutaPiso from './routes/rutaPiso';
 import rutaTicket from './routes/rutaTicket';
 import rutaPago from './routes/rutaPago';
 import rutaImagenes from './routes/rutaImagenes';
+import rutaZona from './routes/rutaZona';
 import { supabase } from './supabase';
 import { eliminarTicketsExpiradosCron } from './controllers/gestores/ControlTicket';
 import { actualizarEstadosEventosCron } from './controllers/gestores/ControlEvento';
@@ -31,6 +32,7 @@ app.use('/api/pisos', rutaPiso);
 app.use('/api/tickets', rutaTicket);
 app.use('/api/pago', rutaPago);
 app.use('/api/imagenes', rutaImagenes);
+app.use('/api/zonas', rutaZona);
 
 
 app.get('/api/auth/callback', (req, res) => {

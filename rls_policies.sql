@@ -34,6 +34,14 @@ CREATE POLICY "Permitir todo en BDTicket" ON "BDTicket"
     FOR ALL USING (true)
     WITH CHECK (true);
 
+-- ===== BDZona =====
+ALTER TABLE "BDZona" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Permitir todo en BDZona" ON "BDZona";
+CREATE POLICY "Permitir todo en BDZona" ON "BDZona"
+    FOR ALL USING (true)
+    WITH CHECK (true);
+
 -- ===== Auth_Users =====
 ALTER TABLE "Auth_Users" ENABLE ROW LEVEL SECURITY;
 

@@ -3,6 +3,12 @@ import { supabase } from '../../supabase';
 
 const tablaAnfiteatro = 'BDAnfiteatro';
 
+function parseTextArray(val: any): string[] {
+    if (Array.isArray(val)) return val;
+    if (typeof val !== 'string') return [];
+    try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch { return []; }
+}
+
 export const verAnfiteatros = async (req: Request, res: Response) => {
     try {
         const { pisoID } = req.query;
@@ -11,6 +17,12 @@ export const verAnfiteatros = async (req: Request, res: Response) => {
             query = query.eq('pisoID', pisoID as string);
         }
         const { data } = await query;
+        if (data) {
+            const arr = Array.isArray(data) ? data : [data];
+            arr.forEach((a: any) => {
+                a.asientosVacios = parseTextArray(a.asientosVacios);
+            });
+        }
         res.json(data);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -18,10 +30,10 @@ export const verAnfiteatros = async (req: Request, res: Response) => {
 };
 
 export const crearAnfiteatro = async (req: Request, res: Response) => {
-    const { precio, precioVips, filas, columnas, asientosVacios, asientosVips, pisoID } = req.body;
+    const { filas, columnas, asientosVacios, pisoID } = req.body;
 
-    if (!precio || !filas || !columnas || !pisoID) {
-        res.status(400).json({ error: 'Faltan campos requeridos: precio, filas, columnas, pisoID' });
+    if (!filas || !columnas || !pisoID) {
+        res.status(400).json({ error: 'Faltan campos requeridos: filas, columnas, pisoID' });
         return;
     }
 
@@ -29,12 +41,9 @@ export const crearAnfiteatro = async (req: Request, res: Response) => {
         const { data, error } = await supabase
             .from(tablaAnfiteatro)
             .insert({
-                precio,
-                precioVips: precioVips || null,
                 filas,
                 columnas,
-                asientosVacios: asientosVacios || [],
-                asientosVips: asientosVips || [],
+                asientosVacios: JSON.stringify(asientosVacios || []),
                 pisoID
             })
             .select()

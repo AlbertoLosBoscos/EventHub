@@ -54,7 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             document.getElementById('subsection-' + btn.dataset.subsection).classList.add('active');
             if (btn.dataset.subsection === 'crear-anfiteatro') {
-                cargarPisosSelect('inputAnfiPiso', true);
+                cargarSitiosSelect('inputAnfiSitio');
+                document.getElementById('inputAnfiPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+            } else if (btn.dataset.subsection === 'gestionar-zonas') {
+                cargarSitiosSelect('inputZonaSitio');
+                document.getElementById('inputZonaPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+                document.getElementById('zonaGridContainer').classList.add('hidden');
+                document.getElementById('zonaInfoAnfiteatro').classList.add('hidden');
             } else if (btn.dataset.subsection === 'crear-palco') {
                 cargarSitiosSelect('inputPalcoSitio');
                 cargarPisosSelect('inputPalcoPiso');
@@ -89,8 +95,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('formCrearPalco').addEventListener('submit', crearPalco);
     document.getElementById('btnGenerarGrid').addEventListener('click', generarGrid);
 
+    document.getElementById('inputZonaTipo').addEventListener('change', () => {
+        zonaSelectedField = document.getElementById('inputZonaTipo').value;
+        actualizarGrid();
+    });
+    document.getElementById('inputZonaPrecio').addEventListener('change', () => {
+        const val = parseFloat(document.getElementById('inputZonaPrecio').value);
+        if (zonaSelectedField === 'asientosVips') zonaData.precioVips = val || 0;
+        else if (zonaSelectedField === 'Zona1') zonaData.precioZona1 = val || 0;
+        else if (zonaSelectedField === 'Zona2') zonaData.precioZona2 = val || 0;
+        else if (zonaSelectedField === 'Zona3') zonaData.precioZona3 = val || 0;
+    });
+    document.getElementById('btnGuardarZona').addEventListener('click', guardarZonas);
+
     cargarSitiosSelect('inputPisoSitio');
-    cargarPisosSelect('inputAnfiPiso', true);
+    cargarSitiosSelect('inputAnfiSitio');
     cargarSitiosSelect('inputPalcoSitio');
     document.getElementById('inputPalcoSitio').addEventListener('change', (e) => {
         const sitioID = e.target.value;
@@ -98,6 +117,33 @@ document.addEventListener('DOMContentLoaded', () => {
             cargarPisosSelect('inputPalcoPiso', false, sitioID);
         } else {
             document.getElementById('inputPalcoPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+        }
+    });
+    document.getElementById('inputAnfiSitio').addEventListener('change', (e) => {
+        const sitioID = e.target.value;
+        if (sitioID) {
+            cargarPisosSelect('inputAnfiPiso', true, sitioID);
+        } else {
+            document.getElementById('inputAnfiPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+        }
+    });
+    document.getElementById('inputZonaSitio').addEventListener('change', (e) => {
+        const sitioID = e.target.value;
+        document.getElementById('zonaGridContainer').classList.add('hidden');
+        document.getElementById('zonaInfoAnfiteatro').classList.add('hidden');
+        if (sitioID) {
+            cargarPisosSelect('inputZonaPiso', false, sitioID);
+        } else {
+            document.getElementById('inputZonaPiso').innerHTML = '<option value="">-- Primero selecciona un sitio --</option>';
+        }
+    });
+    document.getElementById('inputZonaPiso').addEventListener('change', (e) => {
+        const pisoID = e.target.value;
+        if (pisoID) {
+            cargarZonaPorPiso(pisoID);
+        } else {
+            document.getElementById('zonaGridContainer').classList.add('hidden');
+            document.getElementById('zonaInfoAnfiteatro').classList.add('hidden');
         }
     });
     document.getElementById('formCrearSitio').addEventListener('submit', crearSitio);

@@ -408,3 +408,41 @@ body {
     font-size: 0.8rem;
     margin-left: 0.5rem;
 }
+
+.zona-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.zona-controls label {
+    flex: 1;
+    min-width: 140px;
+}
+
+.zona-hint {
+    width: 100%;
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0;
+}
+
+.anfi-seat.zona-highlight {
+    background: #4fc3f7;
+    border-color: #0288d1;
+    color: #fff;
+}
+
+.anfi-seat.zona-highlight.vip {
+    background: #ffd700;
+    border-color: #b8960f;
+    color: #333;
+}
+
+.anfi-seat.zona-highlight.discapacitados {
+    background: #1565C0;
+    border-color: #0D47A1;
+    color: #fff;
+}

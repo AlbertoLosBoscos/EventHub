@@ -43,11 +43,15 @@ async function cargarPisosSelect(selectId, soloLibres, sitioID) {
     try {
         const url = soloLibres ? `${API_BASE}/pisos/sin-anfiteatro` : `${API_BASE}/pisos/mostrar`;
         const r = await fetch(url, { headers: soloLibres ? authAdminHeaders() : {} });
-        const pisos = await r.json();
+        let pisos = await r.json();
+        if (!Array.isArray(pisos)) pisos = [];
+        if (sitioID) {
+            pisos = pisos.filter(p => String(p.sitioID) === String(sitioID));
+        }
         const select = document.getElementById(selectId);
+        if (!select) return;
         select.innerHTML = '<option value="">-- Selecciona un piso --</option>';
-        const filtrados = sitioID ? (pisos || []).filter(p => p.sitioID === sitioID) : (pisos || []);
-        filtrados.forEach(p => {
+        pisos.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
             opt.textContent = `Planta ${p.planta}`;
@@ -137,14 +141,7 @@ function generarGrid() {
             seat.dataset.seatId = `${f + 1}${letras[c]}`;
             seat.textContent = `${f + 1}${letras[c]}`;
             seat.addEventListener('click', () => {
-                if (seat.classList.contains('vacio')) {
-                    seat.classList.remove('vacio');
-                    seat.classList.add('vip');
-                } else if (seat.classList.contains('vip')) {
-                    seat.classList.remove('vip');
-                } else {
-                    seat.classList.add('vacio');
-                }
+                seat.classList.toggle('vacio');
             });
             grid.appendChild(seat);
         }
@@ -159,19 +156,14 @@ async function crearAnfiteatro(e) {
         return;
     }
     const asientosVacios = [];
-    const asientosVips = [];
     seats.forEach(s => {
         if (s.classList.contains('vacio')) asientosVacios.push(s.dataset.seatId);
-        if (s.classList.contains('vip')) asientosVips.push(s.dataset.seatId);
     });
 
     const body = {
-        precio: parseFloat(document.getElementById('inputAnfiPrecio').value),
-        precioVips: parseFloat(document.getElementById('inputAnfiPrecioVip').value) || null,
         filas: parseInt(document.getElementById('inputAnfiFilas').value),
         columnas: parseInt(document.getElementById('inputAnfiColumnas').value),
-        asientosVacios,
-        asientosVips,
+        asientosVacios: asientosVacios,
         pisoID: document.getElementById('inputAnfiPiso').value,
     };
     const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
@@ -219,5 +211,225 @@ async function crearPalco(e) {
         }
     } catch (err) {
         mostrarMensaje('mensajeCrearPalco', 'Error de conexión', 'error');
+    }
+}
+
+let zonaAnfiteatroActual = null;
+let zonaData = {};
+let zonaSelectedField = 'asientosVips';
+let zonaGridSeats = [];
+
+function getZoneColumn(field) {
+    if (field === 'asientosVips' || field === 'asientosDiscapacitados') return field;
+    return field;
+}
+
+function getPrecioColumn(field) {
+    if (field === 'asientosVips') return 'precioVips';
+    if (field === 'asientosDiscapacitados') return null;
+    return 'precio' + field;
+}
+
+function parseSeats(val) {
+    if (Array.isArray(val)) return val;
+    try {
+        let parsed = JSON.parse(val || '[]');
+        if (typeof parsed === 'string') {
+            parsed = JSON.parse(parsed);
+        }
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+    } catch { return []; }
+}
+
+function generarZonaGrid() {
+    const anfiteatro = zonaAnfiteatroActual;
+    if (!anfiteatro) return;
+    const filas = anfiteatro.filas;
+    const columnas = anfiteatro.columnas;
+    const asientosVacios = parseSeats(anfiteatro.asientosVacios);
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    const grid = document.getElementById('zonaGrid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${columnas}, 32px)`;
+    grid.style.gridTemplateRows = `repeat(${filas}, 32px)`;
+
+    zonaGridSeats = [];
+
+    for (let f = 0; f < filas; f++) {
+        for (let c = 0; c < columnas; c++) {
+            const seatId = `${f + 1}${letters[c]}`;
+            const seat = document.createElement('div');
+            seat.className = 'anfi-seat';
+            seat.dataset.seatId = seatId;
+            seat.textContent = seatId;
+
+            if (asientosVacios.includes(seatId)) {
+                seat.classList.add('vacio');
+                seat.style.cursor = 'default';
+            } else {
+                seat.addEventListener('click', () => toggleZonaSeat(seat, seatId));
+            }
+
+            grid.appendChild(seat);
+            zonaGridSeats.push({ el: seat, id: seatId });
+        }
+    }
+
+    actualizarGrid();
+}
+
+function toggleZonaSeat(seat, seatId) {
+    if (seat.classList.contains('vacio')) return;
+
+    if (seatInOtherZone(seatId)) {
+        const zone = seatZoneName(seatId);
+        mostrarMensaje('mensajeGestionarZonas', `Este asiento ya pertenece a ${zone}. Quítalo de allí primero.`, 'error');
+        return;
+    }
+
+    const arr = zonaData[zonaSelectedField] || [];
+    if (arr.includes(seatId)) {
+        zonaData[zonaSelectedField] = arr.filter(s => s !== seatId);
+    } else {
+        zonaData[zonaSelectedField] = [...arr, seatId];
+    }
+
+    actualizarGrid();
+}
+
+function actualizarGrid() {
+    const seatToZone = {};
+    ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados'].forEach(f => {
+        (zonaData[f] || []).forEach(s => { seatToZone[s] = f; });
+    });
+
+    const zoneLabels = { asientosVips: 'VIP', Zona1: 'Z1', Zona2: 'Z2', Zona3: 'Z3', asientosDiscapacitados: 'DIS' };
+
+    zonaGridSeats.forEach(({ el, id }) => {
+        el.classList.remove('zona-highlight', 'vip', 'discapacitados');
+        el.title = '';
+
+        const inCurrent = (zonaData[zonaSelectedField] || []).includes(id);
+        const inOther = seatToZone[id] && seatToZone[id] !== zonaSelectedField;
+
+        if (inCurrent) {
+            el.classList.add('zona-highlight');
+            if (zonaSelectedField === 'asientosDiscapacitados') el.classList.add('discapacitados');
+            else if (zonaSelectedField === 'asientosVips') el.classList.add('vip');
+            el.style.opacity = '1';
+        } else if (inOther) {
+            el.style.opacity = '0.4';
+            el.title = `Pertenece a ${zoneLabels[seatToZone[id]]}`;
+        } else {
+            el.style.opacity = '1';
+        }
+    });
+
+    const precio = getPrecioForSelected();
+    document.getElementById('inputZonaPrecio').value = precio !== null ? precio : '';
+}
+
+function getPrecioForSelected() {
+    if (zonaSelectedField === 'asientosVips') return zonaData.precioVips;
+    if (zonaSelectedField === 'Zona1') return zonaData.precioZona1;
+    if (zonaSelectedField === 'Zona2') return zonaData.precioZona2;
+    if (zonaSelectedField === 'Zona3') return zonaData.precioZona3;
+    return null;
+}
+
+function seatInOtherZone(seatId) {
+    return ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados']
+        .filter(f => f !== zonaSelectedField)
+        .some(f => (zonaData[f] || []).includes(seatId));
+}
+
+function seatZoneName(seatId) {
+    const names = { asientosVips: 'VIP', Zona1: 'Zona 1', Zona2: 'Zona 2', Zona3: 'Zona 3', asientosDiscapacitados: 'Discapacitados' };
+    for (const f of ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados']) {
+        if (f !== zonaSelectedField && (zonaData[f] || []).includes(seatId)) return names[f];
+    }
+    return null;
+}
+
+async function cargarZonaPorPiso(pisoID) {
+    if (!pisoID) {
+        document.getElementById('zonaGridContainer').classList.add('hidden');
+        document.getElementById('zonaInfoAnfiteatro').classList.add('hidden');
+        zonaAnfiteatroActual = null;
+        return;
+    }
+    try {
+        const r = await fetch(`${API_BASE}/anfiteatros/mostrar?pisoID=${pisoID}`);
+        const anfiteatros = await r.json();
+        zonaAnfiteatroActual = (anfiteatros || [])[0] || null;
+
+        if (!zonaAnfiteatroActual) {
+            document.getElementById('zonaInfoAnfiteatro').textContent = 'Este piso no tiene anfiteatro.';
+            document.getElementById('zonaInfoAnfiteatro').classList.remove('hidden');
+            document.getElementById('zonaGridContainer').classList.add('hidden');
+            return;
+        }
+
+        document.getElementById('zonaInfoAnfiteatro').textContent = `Anfiteatro: ${zonaAnfiteatroActual.filas}×${zonaAnfiteatroActual.columnas} asientos`;
+        document.getElementById('zonaInfoAnfiteatro').classList.remove('hidden');
+
+        const zRes = await fetch(`${API_BASE}/zonas/mostrar/${zonaAnfiteatroActual.id}`);
+        const zData = await zRes.json();
+
+        zonaData = {
+            asientosVips: parseSeats(zData?.asientosVips),
+            precioVips: zData?.precioVips || 0,
+            Zona1: parseSeats(zData?.Zona1),
+            precioZona1: zData?.precioZona1 || 0,
+            Zona2: parseSeats(zData?.Zona2),
+            precioZona2: zData?.precioZona2 || 0,
+            Zona3: parseSeats(zData?.Zona3),
+            precioZona3: zData?.precioZona3 || 0,
+            asientosDiscapacitados: parseSeats(zData?.asientosDiscapacitados),
+        };
+
+        document.getElementById('zonaGridContainer').classList.remove('hidden');
+        generarZonaGrid();
+    } catch (e) {
+        console.error('Error al cargar anfiteatro:', e);
+    }
+}
+
+async function guardarZonas() {
+    if (!zonaAnfiteatroActual || !zonaAnfiteatroActual.id) {
+        mostrarMensaje('mensajeGestionarZonas', 'Selecciona un piso con anfiteatro', 'error');
+        return;
+    }
+    const anfiteatroID = zonaAnfiteatroActual.id;
+
+    const body = {
+        anfiteatroID,
+        asientosVips: zonaData.asientosVips,
+        precioVips: zonaData.precioVips,
+        Zona1: zonaData.Zona1,
+        precioZona1: zonaData.precioZona1,
+        Zona2: zonaData.Zona2,
+        precioZona2: zonaData.precioZona2,
+        Zona3: zonaData.Zona3,
+        precioZona3: zonaData.precioZona3,
+        asientosDiscapacitados: zonaData.asientosDiscapacitados,
+    };
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
+    try {
+        const r = await fetch(`${API_BASE}/zonas/upsert`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+        const data = await r.json();
+        if (r.ok) {
+            mostrarMensaje('mensajeGestionarZonas', 'Todas las zonas guardadas con éxito', 'success');
+        } else {
+            mostrarMensaje('mensajeGestionarZonas', 'Error: ' + (data.error || 'desconocido'), 'error');
+        }
+    } catch (err) {
+        mostrarMensaje('mensajeGestionarZonas', 'Error de conexión', 'error');
     }
 }
