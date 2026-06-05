@@ -102,15 +102,17 @@ async function eliminarEvento() {
         mostrarMensaje('mensajeEliminar', 'Selecciona un evento', 'error');
         return;
     }
-    if (!confirm('¿Seguro que quieres eliminar este evento?')) return;
+    if (!confirm('¿Seguro que quieres cancelar este evento?')) return;
+    const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
-        const r = await fetch(`${API_BASE}/eventos/eliminar/${eventoId}`, {
-            method: 'DELETE',
-            headers: authAdminHeaders(),
+        const r = await fetch(`${API_BASE}/eventos/actualizar/${eventoId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ estado: 'cancelado' }),
         });
         const data = await r.json();
         if (r.ok) {
-            mostrarMensaje('mensajeEliminar', 'Evento eliminado con éxito', 'success');
+            mostrarMensaje('mensajeEliminar', 'Evento cancelado con éxito', 'success');
             cargarEventosSelect('selectEliminar', true, true);
             cargarEventosSelect('selectGestionar', true, true);
         } else {

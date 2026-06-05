@@ -23,7 +23,7 @@ function renderizarEventos(eventos) {
 
     countEl.textContent = `${eventos.length} eventos disponibles`;
     
-    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '✅ Terminado', cancelado: '❌ Cancelado' };
+    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '🏁 Terminado', cancelado: '❌ Cancelado' };
 
     container.innerHTML = eventos.map(evento => `
         <div class="event-card">

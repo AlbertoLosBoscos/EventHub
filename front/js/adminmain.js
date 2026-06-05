@@ -24,7 +24,7 @@ function renderizarEventos(eventos) {
         return;
     }
     countEl.textContent = `${eventos.length} eventos disponibles`;
-    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '✅ Terminado', cancelado: '❌ Cancelado' };
+    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '🏁 Terminado', cancelado: '❌ Cancelado' };
 
     container.innerHTML = eventos.map(e => `
         <div class="event-card" data-event-id="${e.id}" onclick="seleccionarEvento('${e.id}')">
@@ -54,6 +54,7 @@ window.seleccionarEvento = async function(eventoId) {
         if (!evento) return;
 
         document.getElementById('detailID').textContent = evento.id;
+        document.getElementById('detailNombreHeader').textContent = evento.nombre;
         document.getElementById('detailNombre').textContent = evento.nombre;
         document.getElementById('detailDescripcion').textContent = evento.descripcion || 'Sin descripción';
         const sitioNombre = evento.sitio?.nombre || evento.sitioID || '-';
@@ -69,16 +70,6 @@ window.seleccionarEvento = async function(eventoId) {
         document.getElementById('detailEstado').textContent = evento.estado || 'disponible';
         document.getElementById('detailEstado').className = `estado-${evento.estado || 'disponible'}`;
         document.getElementById('detailDuracion').textContent = evento.duracion ? `${evento.duracion} min` : '-';
-
-        const btnCancelar = document.getElementById('btnCancelarEvento');
-        if (btnCancelar) {
-            if (evento.estado === 'cancelado' || evento.estado === 'terminado') {
-                btnCancelar.style.display = 'none';
-            } else {
-                btnCancelar.style.display = 'inline-block';
-                btnCancelar.dataset.eventoId = evento.id;
-            }
-        }
 
         const imgContainer = document.getElementById('detailImage');
         if (evento.imagen) {
@@ -128,32 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dateInicio.addEventListener('change', actualizarRango);
     dateFin.addEventListener('change', actualizarRango);
 
-    document.getElementById('btnCerrarDetalle').addEventListener('click', () => {
-        document.getElementById('eventDetail').classList.add('hidden');
-        document.querySelectorAll('.event-card').forEach(c => c.classList.remove('event-card-selected'));
-    });
-
-    document.getElementById('btnCancelarEvento').addEventListener('click', async function() {
-        const eventoId = this.dataset.eventoId;
-        if (!eventoId) return;
-        if (!confirm('¿Seguro que quieres cancelar este evento?')) return;
-        try {
-            const r = await fetch(`${API_BASE}/eventos/actualizar/${eventoId}`, {
-                method: 'PUT',
-                headers: authHeaders(),
-                body: JSON.stringify({ estado: 'cancelado' }),
-            });
-            const data = await r.json();
-            if (r.ok) {
-                alert('Evento cancelado con éxito');
-                location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'desconocido'));
-            }
-        } catch {
-            alert('Error de conexión');
-        }
-    });
+    const userRole = localStorage.getItem('userRole');
+    const navMainLink = document.getElementById('navMainLink');
+    if (navMainLink && userRole === 'admin') {
+        navMainLink.style.display = 'inline';
+    }
 
     const logoutBtn = document.querySelector('.btn-primary');
     if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {

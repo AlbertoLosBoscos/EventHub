@@ -21,8 +21,8 @@ function renderizarEventos(eventos) {
 
     countEl.textContent = `${eventos.length} eventos disponibles`;
 
-    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '✅ Terminado', cancelado: '❌ Cancelado' };
-    const blocked = ['terminado', 'cancelado'];
+    const badgeMap = { disponible: '✅ Disponible', realizandose: '🔴 En emisión', terminado: '🏁 Terminado', cancelado: '❌ Cancelado' };
+    const blocked = ['realizandose', 'terminado', 'cancelado'];
 
     container.innerHTML = eventos.map(evento => `
         <div class="event-card ${blocked.includes(evento.estado) ? 'event-card-disabled' : ''}" data-event-id="${evento.id}" data-estado="${evento.estado || 'disponible'}" onclick="${blocked.includes(evento.estado) ? '' : `seleccionarEvento('${evento.id}', '${evento.nombre}', ${evento.duracion}, '${evento.fecha}', '${evento.sitioID || ''}')`}">
