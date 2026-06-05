@@ -17,7 +17,7 @@ export const verSitios = async (req: Request, res: Response) => {
 }
 
 export const crearSitio = async (req: Request, res: Response) => {
-    const {nombre, aforo, direccion} = req.body;
+    const {nombre, aforo, direccion, url_maps} = req.body;
     if (!nombre || !aforo) {
         res.status(400).json({ error: 'Faltan campos requeridos' });
         return;
@@ -29,7 +29,8 @@ export const crearSitio = async (req: Request, res: Response) => {
             .insert({ 
                 nombre, 
                 aforo,
-                direccion: direccion || null })
+                direccion: direccion || null,
+                url_maps: url_maps || null })
             .select()
             .single();
 
@@ -43,7 +44,7 @@ export const crearSitio = async (req: Request, res: Response) => {
 
 export const actualizarSitio = async (req: Request, res: Response) => {
     const { sitioID } = req.params;
-    const { nombre, aforo, direccion } = req.body;
+    const { nombre, aforo, direccion, url_maps } = req.body;
     if (!sitioID) {
         res.status(400).json({ error: 'Falta el ID del sitio' });
         return;
@@ -53,6 +54,7 @@ export const actualizarSitio = async (req: Request, res: Response) => {
         if (nombre !== undefined) updateData.nombre = nombre;
         if (aforo !== undefined) updateData.aforo = aforo;
         if (direccion !== undefined) updateData.direccion = direccion;
+        if (url_maps !== undefined) updateData.url_maps = url_maps;
 
         const { data, error } = await supabase
             .from(tablaSitio)

@@ -60,8 +60,8 @@ window.seleccionarEvento = async function(eventoId) {
         const sitioNombre = evento.sitio?.nombre || evento.sitioID || '-';
         document.getElementById('detailSitio').textContent = sitioNombre;
         const mapLink = document.getElementById('detailSitioMapLink');
-        if (evento.sitio?.direccion) {
-            mapLink.innerHTML = ` <a href="https://www.google.com/maps?q=${evento.sitio.direccion}" target="_blank" class="map-link">📍 Ver en Google Maps</a>`;
+        if (evento.sitio?.url_maps) {
+            mapLink.innerHTML = ` <a href="${evento.sitio.url_maps}" target="_blank" class="map-link">📍 Ver en Google Maps</a>`;
         } else {
             mapLink.innerHTML = '';
         }

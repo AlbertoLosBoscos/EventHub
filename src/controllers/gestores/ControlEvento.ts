@@ -3,7 +3,7 @@ import {supabase} from '../../supabase'
 
 const tablaEvento = 'BDEventos';
 
-const selectConSitio = '*, sitio:BDSitio(nombre, direccion)';
+const selectConSitio = '*, sitio:BDSitio(nombre, direccion, url_maps)';
 
 export const verEventos = async (req: Request, res: Response) => {
     try {

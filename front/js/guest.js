@@ -33,7 +33,7 @@ function renderizarEventos(eventos) {
             <div class="event-info">
                 <span class="event-tag">${evento.categoria || 'Evento'}</span>
                 <h3 class="event-name">${evento.nombre}</h3>
-                <p class="event-location">📍 ${evento.sitio?.nombre && evento.sitio?.direccion ? `<a href="https://www.google.com/maps?q=${evento.sitio.direccion}" target="_blank" class="map-link">${evento.sitio.nombre}</a>` : (evento.sitio?.nombre || 'Por determinar')}</p>
+                <p class="event-location">📍 ${evento.sitio?.nombre && evento.sitio?.url_maps ? `<a href="${evento.sitio.url_maps}" target="_blank" class="map-link">${evento.sitio.nombre}</a>` : (evento.sitio?.nombre || 'Por determinar')}</p>
                 <p class="event-date">📅 ${new Date(evento.fecha).toLocaleString('es-ES')}</p>
                 <div class="event-footer">
                     <span class="event-price">€${evento.precio || '45.00'}</span>
