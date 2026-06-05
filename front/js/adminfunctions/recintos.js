@@ -63,6 +63,7 @@ async function crearSitio(e) {
     const body = {
         nombre: document.getElementById('inputSitioNombre').value,
         aforo: parseInt(document.getElementById('inputSitioAforo').value),
+        direccion: document.getElementById('inputSitioDireccion').value || null,
         url_maps: document.getElementById('inputSitioUrlMaps').value || null,
     };
     const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };

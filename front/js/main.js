@@ -285,6 +285,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const btnCash = document.getElementById('btnPagoEfectivo');
+    if (btnCash && userRole === 'employee') {
+        btnCash.classList.remove('hidden');
+        btnCash.addEventListener('click', async (e) => {
+            if (selectedSeats.length === 0 && !selectedPalco) {
+                alert('Por favor, selecciona al menos un asiento o un palco.');
+                return;
+            }
+
+            if (!currentEvent) {
+                alert('Por favor, selecciona un evento.');
+                return;
+            }
+
+            let subtotal = selectedSeats.reduce((sum, s) => sum + getPrecioAsiento(s), 0);
+            if (selectedPalco) subtotal += selectedPalcoPrecio;
+            const serviceFee = subtotal * SERVICE_FEE_PERCENTAGE;
+            const total = subtotal + serviceFee;
+
+            const asientosParaPago = [];
+            if (selectedPalcoNumero) asientosParaPago.push(`PALCO-${selectedPalcoNumero}`);
+            if (selectedSeats.length > 0) asientosParaPago.push(selectedSeats.join(', '));
+            const asientosStr = asientosParaPago.join(', ');
+
+            btnCash.disabled = true;
+            btnCash.textContent = 'Procesando...';
+
+            try {
+                const token = localStorage.getItem('token');
+                const r = await fetch(`${API_BASE}/pago/pagar-efectivo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        ticketID: currentTicket?.id,
+                        asientos: asientosStr,
+                        total,
+                        eventoID: currentEvent.eventoId,
+                        usuarioID: localStorage.getItem('usuarioId'),
+                    }),
+                });
+                const data = await r.json();
+                if (r.ok) {
+                    alert('Pago en efectivo registrado con éxito');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'desconocido'));
+                }
+            } catch (err) {
+                alert('Error de conexión');
+            }
+
+            btnCash.disabled = false;
+            btnCash.textContent = 'Pagado en efectivo';
+        });
+    }
+
     document.getElementById('navEntradas').addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.main > .steps-indicator, .main > .content-grid').forEach(el => el.classList.remove('hidden'));
