@@ -1330,3 +1330,14 @@ body {
     gap: 0.75rem;
 }
 
+.map-link {
+    color: var(--primary);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.map-link:hover {
+    color: var(--primary-container);
+}
+

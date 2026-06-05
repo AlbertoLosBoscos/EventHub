@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - EventHub</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
     <div class="admin-container">
@@ -143,6 +144,10 @@
                 <form id="formCrearSitio">
                     <label>Nombre <input type="text" id="inputSitioNombre" required></label>
                     <label>Aforo <input type="number" id="inputSitioAforo" required></label>
+                    <label>Ubicación <small>(Haz clic en el mapa para seleccionar)</small></label>
+                    <div id="mapPicker" style="height:300px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc;"></div>
+                    <input type="hidden" id="inputSitioDireccion">
+                    <p id="mapCoords" style="font-size:0.8rem;color:var(--on-surface-variant);margin-bottom:10px;">Ninguna ubicación seleccionada</p>
                     <button type="submit">Crear Sitio</button>
                 </form>
                 <div id="mensajeCrearSitio" class="admin-mensaje"></div>
@@ -150,6 +155,7 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../js/admin.js"></script>
     <script src="../js/adminfunctions/eventos.js"></script>
     <script src="../js/adminfunctions/recintos.js"></script>

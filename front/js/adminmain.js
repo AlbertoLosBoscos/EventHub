@@ -56,7 +56,14 @@ window.seleccionarEvento = async function(eventoId) {
         document.getElementById('detailID').textContent = evento.id;
         document.getElementById('detailNombre').textContent = evento.nombre;
         document.getElementById('detailDescripcion').textContent = evento.descripcion || 'Sin descripción';
-        document.getElementById('detailSitio').textContent = evento.sitioID || '-';
+        const sitioNombre = evento.sitio?.nombre || evento.sitioID || '-';
+        document.getElementById('detailSitio').textContent = sitioNombre;
+        const mapLink = document.getElementById('detailSitioMapLink');
+        if (evento.sitio?.direccion) {
+            mapLink.innerHTML = ` <a href="https://www.google.com/maps?q=${evento.sitio.direccion}" target="_blank" class="map-link">📍 Ver en Google Maps</a>`;
+        } else {
+            mapLink.innerHTML = '';
+        }
         document.getElementById('detailFecha').textContent = evento.fecha ? new Date(evento.fecha).toLocaleString('es-ES') : '-';
         document.getElementById('detailCompania').textContent = evento.compania || '-';
         document.getElementById('detailEstado').textContent = evento.estado || 'disponible';

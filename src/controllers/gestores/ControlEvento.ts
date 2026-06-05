@@ -3,11 +3,13 @@ import {supabase} from '../../supabase'
 
 const tablaEvento = 'BDEventos';
 
+const selectConSitio = '*, sitio:BDSitio(nombre, direccion)';
+
 export const verEventos = async (req: Request, res: Response) => {
     try {
         const { data } = await supabase
             .from(tablaEvento)
-            .select('*')
+            .select(selectConSitio)
 
         res.json(data);
     } catch (error: any) {
@@ -53,7 +55,7 @@ export const verDetalles = async (req: Request, res: Response) => {
     try {
         const { data } = await supabase
             .from(tablaEvento)
-            .select('*')
+            .select(selectConSitio)
             .eq('id', eventoID)
             .single();
 
@@ -174,7 +176,7 @@ export const verEventosPorFecha = async (req: Request, res: Response) => {
     try {
         let query = supabase
             .from(tablaEvento)
-            .select('*')
+            .select(selectConSitio)
             .gte('fecha', fechaInicio as string)
             .lte('fecha', fechaFin as string + 'T23:59:59')
             .order('fecha', { ascending: true });

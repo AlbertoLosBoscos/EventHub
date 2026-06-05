@@ -58,11 +58,58 @@ async function cargarPisosSelect(selectId, soloLibres, sitioID) {
     }
 }
 
+let mapPicker = null;
+let mapMarker = null;
+
+function initMapPicker() {
+    const container = document.getElementById('mapPicker');
+    if (!container || mapPicker) return;
+
+    mapPicker = L.map('mapPicker').setView([40.416775, -3.703790], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapPicker);
+
+    mapPicker.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        const coords = `${lat},${lng}`;
+
+        document.getElementById('inputSitioDireccion').value = coords;
+        document.getElementById('mapCoords').textContent = `📍 ${lat}, ${lng}`;
+
+        if (mapMarker) mapPicker.removeLayer(mapMarker);
+        mapMarker = L.marker([lat, lng]).addTo(mapPicker);
+    });
+
+    setTimeout(() => mapPicker.invalidateSize(), 200);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const crearBtn = document.querySelector('[data-section="crear-sitio"]');
+    if (crearBtn) {
+        crearBtn.addEventListener('click', function() {
+            setTimeout(initMapPicker, 100);
+        });
+    }
+    const subpanelBtns = document.querySelectorAll('.subpanel-nav-btn');
+    subpanelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.dataset.subsection === 'crear-sitio') {
+                setTimeout(initMapPicker, 100);
+            }
+        });
+    });
+});
+
 async function crearSitio(e) {
     e.preventDefault();
     const body = {
         nombre: document.getElementById('inputSitioNombre').value,
         aforo: parseInt(document.getElementById('inputSitioAforo').value),
+        direccion: document.getElementById('inputSitioDireccion').value || null,
     };
     const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {
@@ -75,6 +122,8 @@ async function crearSitio(e) {
         if (r.ok) {
             mostrarMensaje('mensajeCrearSitio', 'Sitio creado con éxito', 'success');
             document.getElementById('formCrearSitio').reset();
+            document.getElementById('mapCoords').textContent = 'Ninguna ubicación seleccionada';
+            if (mapMarker) { mapPicker.removeLayer(mapMarker); mapMarker = null; }
             cargarSitiosSelect('inputSitioID');
             cargarSitiosSelect('editSitioID');
             cargarSitiosSelect('inputPisoSitio');
