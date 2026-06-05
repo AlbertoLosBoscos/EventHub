@@ -218,26 +218,18 @@ let zonaAnfiteatroActual = null;
 let zonaData = {};
 let zonaSelectedField = 'asientosVips';
 let zonaGridSeats = [];
-
-function getZoneColumn(field) {
-    if (field === 'asientosVips' || field === 'asientosDiscapacitados') return field;
-    return field;
-}
-
-function getPrecioColumn(field) {
-    if (field === 'asientosVips') return 'precioVips';
-    if (field === 'asientosDiscapacitados') return null;
-    return 'precio' + field;
-}
+let modoDiscapacitado = false;
 
 function parseSeats(val) {
     if (Array.isArray(val)) return val;
+    if (!val) return [];
     try {
-        let parsed = JSON.parse(val || '[]');
-        if (typeof parsed === 'string') {
-            parsed = JSON.parse(parsed);
+        let p = JSON.parse(val);
+        if (Array.isArray(p)) return p;
+        if (typeof p === 'string') {
+            let p2 = JSON.parse(p);
+            if (Array.isArray(p2)) return p2;
         }
-        if (Array.isArray(parsed)) return parsed;
         return [];
     } catch { return []; }
 }
@@ -283,6 +275,17 @@ function generarZonaGrid() {
 function toggleZonaSeat(seat, seatId) {
     if (seat.classList.contains('vacio')) return;
 
+    if (modoDiscapacitado) {
+        const arr = zonaData.asientosDiscapacitados || [];
+        if (arr.includes(seatId)) {
+            zonaData.asientosDiscapacitados = arr.filter(s => s !== seatId);
+        } else {
+            zonaData.asientosDiscapacitados = [...arr, seatId];
+        }
+        actualizarGrid();
+        return;
+    }
+
     if (seatInOtherZone(seatId)) {
         const zone = seatZoneName(seatId);
         mostrarMensaje('mensajeGestionarZonas', `Este asiento ya pertenece a ${zone}. Quítalo de allí primero.`, 'error');
@@ -301,11 +304,12 @@ function toggleZonaSeat(seat, seatId) {
 
 function actualizarGrid() {
     const seatToZone = {};
-    ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados'].forEach(f => {
+    ['asientosVips', 'Zona1', 'Zona2', 'Zona3'].forEach(f => {
         (zonaData[f] || []).forEach(s => { seatToZone[s] = f; });
     });
 
-    const zoneLabels = { asientosVips: 'VIP', Zona1: 'Z1', Zona2: 'Z2', Zona3: 'Z3', asientosDiscapacitados: 'DIS' };
+    const disabled = zonaData.asientosDiscapacitados || [];
+    const zoneLabels = { asientosVips: 'VIP', Zona1: 'Z1', Zona2: 'Z2', Zona3: 'Z3' };
 
     zonaGridSeats.forEach(({ el, id }) => {
         el.classList.remove('zona-highlight', 'vip', 'discapacitados');
@@ -313,13 +317,15 @@ function actualizarGrid() {
 
         const inCurrent = (zonaData[zonaSelectedField] || []).includes(id);
         const inOther = seatToZone[id] && seatToZone[id] !== zonaSelectedField;
+        const isDisabled = disabled.includes(id);
+
+        if (isDisabled) el.classList.add('discapacitados');
 
         if (inCurrent) {
             el.classList.add('zona-highlight');
-            if (zonaSelectedField === 'asientosDiscapacitados') el.classList.add('discapacitados');
-            else if (zonaSelectedField === 'asientosVips') el.classList.add('vip');
+            if (zonaSelectedField === 'asientosVips') el.classList.add('vip');
             el.style.opacity = '1';
-        } else if (inOther) {
+        } else if (inOther && !modoDiscapacitado) {
             el.style.opacity = '0.4';
             el.title = `Pertenece a ${zoneLabels[seatToZone[id]]}`;
         } else {
@@ -340,14 +346,14 @@ function getPrecioForSelected() {
 }
 
 function seatInOtherZone(seatId) {
-    return ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados']
+    return ['asientosVips', 'Zona1', 'Zona2', 'Zona3']
         .filter(f => f !== zonaSelectedField)
         .some(f => (zonaData[f] || []).includes(seatId));
 }
 
 function seatZoneName(seatId) {
-    const names = { asientosVips: 'VIP', Zona1: 'Zona 1', Zona2: 'Zona 2', Zona3: 'Zona 3', asientosDiscapacitados: 'Discapacitados' };
-    for (const f of ['asientosVips', 'Zona1', 'Zona2', 'Zona3', 'asientosDiscapacitados']) {
+    const names = { asientosVips: 'VIP', Zona1: 'Zona 1', Zona2: 'Zona 2', Zona3: 'Zona 3' };
+    for (const f of ['asientosVips', 'Zona1', 'Zona2', 'Zona3']) {
         if (f !== zonaSelectedField && (zonaData[f] || []).includes(seatId)) return names[f];
     }
     return null;

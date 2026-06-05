@@ -7,11 +7,11 @@ function parseZonaText(val: any): string[] {
     if (Array.isArray(val)) return val;
     if (typeof val !== 'string') return [];
     try {
-        let parsed = JSON.parse(val);
-        if (Array.isArray(parsed)) return parsed;
-        if (typeof parsed === 'string') {
-            let parsed2 = JSON.parse(parsed);
-            if (Array.isArray(parsed2)) return parsed2;
+        let p = JSON.parse(val);
+        if (Array.isArray(p)) return p;
+        if (typeof p === 'string') {
+            let p2 = JSON.parse(p);
+            if (Array.isArray(p2)) return p2;
         }
     } catch {}
     return [];

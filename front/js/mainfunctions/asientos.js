@@ -1,23 +1,23 @@
 let zonaRow = null;
 let zonaPriceMap = {};
 let zonaSeatMap = {};
+let disabledSeats = [];
 
 async function loadZonas() {
     if (!currentAnfiteatro || !currentAnfiteatro.id) {
-        console.log('[Zonas] No anfiteatro, limpiando mapas');
         zonaRow = null;
         zonaPriceMap = {};
         zonaSeatMap = {};
+        disabledSeats = [];
         return;
     }
     try {
         const r = await fetch(`${API_BASE}/zonas/mostrar/${currentAnfiteatro.id}`);
         zonaRow = await r.json();
-        console.log('[Zonas] API response:', JSON.stringify(zonaRow));
         if (!zonaRow || !zonaRow.id) {
-            console.log('[Zonas] Sin datos BDZona, precios por defecto');
             zonaPriceMap = {};
             zonaSeatMap = {};
+            disabledSeats = [];
             return;
         }
 
@@ -26,14 +26,22 @@ async function loadZonas() {
 
         function parseSeats(val) {
             if (Array.isArray(val)) return val;
-            try { return JSON.parse(val || '[]'); } catch { return []; }
+            if (!val) return [];
+            try {
+                let p = JSON.parse(val);
+                if (Array.isArray(p)) return p;
+                if (typeof p === 'string') {
+                    let p2 = JSON.parse(p);
+                    if (Array.isArray(p2)) return p2;
+                }
+                return [];
+            } catch { return []; }
         }
         const zoneFields = [
             { seats: parseSeats(zonaRow.asientosVips), price: zonaRow.precioVips || 0, name: 'vip' },
             { seats: parseSeats(zonaRow.Zona1), price: zonaRow.precioZona1 || 0, name: 'zona1' },
             { seats: parseSeats(zonaRow.Zona2), price: zonaRow.precioZona2 || 0, name: 'zona2' },
             { seats: parseSeats(zonaRow.Zona3), price: zonaRow.precioZona3 || 0, name: 'zona3' },
-            { seats: parseSeats(zonaRow.asientosDiscapacitados), price: 0, name: 'discapacitados' },
         ];
 
         zoneFields.forEach(z => {
@@ -43,6 +51,8 @@ async function loadZonas() {
                 zonaSeatMap[seatId].push(z.name);
             });
         });
+
+        disabledSeats = parseSeats(zonaRow.asientosDiscapacitados);
     } catch (e) {
         console.error('[Zonas] Error al cargar zonas:', e);
         zonaPriceMap = {};
@@ -130,7 +140,16 @@ function generateSeatGrid() {
     const columnas = anfiteatro.columnas;
     function parseSeats(val) {
         if (Array.isArray(val)) return val;
-        try { return JSON.parse(val || '[]'); } catch { return []; }
+        if (!val) return [];
+        try {
+            let p = JSON.parse(val);
+            if (Array.isArray(p)) return p;
+            if (typeof p === 'string') {
+                let p2 = JSON.parse(p);
+                if (Array.isArray(p2)) return p2;
+            }
+            return [];
+        } catch { return []; }
     }
     const asientosVacios = parseSeats(anfiteatro.asientosVacios);
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -181,7 +200,8 @@ function generateSeatGrid() {
             const seatZones = zonaSeatMap[seatId] || [];
             if (seatZones.includes('vip')) {
                 seat.classList.add('seat-vip');
-            } else if (seatZones.includes('discapacitados')) {
+            }
+            if (disabledSeats.includes(seatId)) {
                 seat.classList.add('seat-disabled');
             }
 
@@ -201,6 +221,7 @@ async function cargarAnfiteatro(pisoID) {
             zonaRow = null;
             zonaPriceMap = {};
             zonaSeatMap = {};
+            disabledSeats = [];
         } else {
             currentAnfiteatro = anfiteatros[0];
             await loadZonas();

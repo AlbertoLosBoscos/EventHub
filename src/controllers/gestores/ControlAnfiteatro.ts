@@ -6,7 +6,15 @@ const tablaAnfiteatro = 'BDAnfiteatro';
 function parseTextArray(val: any): string[] {
     if (Array.isArray(val)) return val;
     if (typeof val !== 'string') return [];
-    try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch { return []; }
+    try {
+        let p = JSON.parse(val);
+        if (Array.isArray(p)) return p;
+        if (typeof p === 'string') {
+            let p2 = JSON.parse(p);
+            if (Array.isArray(p2)) return p2;
+        }
+    } catch {}
+    return [];
 }
 
 export const verAnfiteatros = async (req: Request, res: Response) => {

@@ -107,6 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (zonaSelectedField === 'Zona3') zonaData.precioZona3 = val || 0;
     });
     document.getElementById('btnGuardarZona').addEventListener('click', guardarZonas);
+    document.getElementById('inputModoDiscapacitado').addEventListener('change', (e) => {
+        modoDiscapacitado = e.target.checked;
+        document.getElementById('inputZonaTipo').disabled = e.target.checked;
+        document.getElementById('inputZonaPrecio').disabled = e.target.checked;
+
+        actualizarGrid();
+    });
 
     cargarSitiosSelect('inputPisoSitio');
     cargarSitiosSelect('inputAnfiSitio');

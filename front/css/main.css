@@ -461,6 +461,11 @@ body {
     border-color: #F59E0B;
 }
 
+.legend-disabled {
+    background-color: #1565C0;
+    border-color: #0D47A1;
+}
+
 .piso-selector {
     display: flex;
     gap: 0.5rem;

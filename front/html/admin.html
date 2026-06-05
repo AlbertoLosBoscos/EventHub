@@ -139,13 +139,12 @@
                                     <option value="Zona1">Zona 1</option>
                                     <option value="Zona2">Zona 2</option>
                                     <option value="Zona3">Zona 3</option>
-                                    <option value="asientosDiscapacitados">Discapacitados</option>
                                 </select>
                             </label>
                             <label>Precio € <input type="number" id="inputZonaPrecio" step="0.01"></label>
+                            <label class="zona-disabled-label"><input type="checkbox" id="inputModoDiscapacitado"> Marcar como discapacitado</label>
                             <button type="button" id="btnGuardarZona">Guardar todas las zonas</button>
                         </div>
-                        <p class="zona-hint">Cada asiento solo puede pertenecer a una zona. Los asientos atenuados pertenecen a otra zona. Haz clic para asignar/quitar de la zona seleccionada.</p>
                     </div>
                 </form>
                 <div id="mensajeGestionarZonas" class="admin-mensaje"></div>
