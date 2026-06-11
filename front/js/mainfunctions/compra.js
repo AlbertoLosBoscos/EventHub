@@ -19,9 +19,9 @@ async function crearTicket(usuarioID, asientos, eventoID, fecha, duracion) {
     }
 }
 
-async function actualizarTicket(ticketID, asientos, confirmado, planta) {
+async function actualizarTicket(ticketID, asientos, estado, planta) {
     try {
-        const body = { ticketID, asientos, confirmado };
+        const body = { ticketID, asientos, estado };
         if (planta !== undefined) body.planta = planta;
         const response = await fetch(`${API_BASE}/tickets/actualizar`, {
             method: 'PUT',
@@ -55,7 +55,7 @@ async function guardarTicket() {
     if (selectedSeats.length > 0) partes.push(selectedSeats.join(', '));
     const asientos = partes.join(', ');
     const piso = pisos.find(p => p.id === selectedPisoID);
-    await actualizarTicket(currentTicket.id, asientos, false, piso?.planta);
+    await actualizarTicket(currentTicket.id, asientos, 'por confirmar', piso?.planta);
 }
 
 async function crearPaymentIntent(cantidad, asientos, eventoId, usuarioId) {

@@ -56,7 +56,7 @@ export const pagarEfectivo = async (req: Request, res: Response) => {
 
         const { error: ticketError } = await supabase
             .from('BDTicket')
-            .update({ asientos: asientos || '', confirmado: true })
+            .update({ asientos: asientos || '', estado: 'confirmado' })
             .eq('id', ticketID);
 
         if (ticketError) throw ticketError;

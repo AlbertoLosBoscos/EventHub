@@ -79,6 +79,13 @@ window.seleccionarEvento = async function(eventoId) {
         }
 
         document.getElementById('eventDetail').classList.remove('hidden');
+        const btnCancel = document.getElementById('btnCancelarEvento');
+        if (evento.estado === 'cancelado' || evento.estado === 'terminado') {
+            btnCancel.style.display = 'none';
+        } else {
+            btnCancel.style.display = 'inline-block';
+            btnCancel.dataset.eventoId = eventoId;
+        }
         window.scrollTo({ top: document.getElementById('eventDetail').offsetTop - 20, behavior: 'smooth' });
     } catch { alert('Error al cargar detalles del evento'); }
 };
@@ -124,6 +131,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navMainLink && userRole === 'admin') {
         navMainLink.style.display = 'inline';
     }
+
+    document.getElementById('btnCancelarEvento').addEventListener('click', async () => {
+        const eventoId = document.getElementById('btnCancelarEvento').dataset.eventoId;
+        if (!eventoId) return;
+        if (!confirm('¿Seguro que quieres cancelar este evento? Se notificará a los compradores.')) return;
+        try {
+            const r = await fetch(`${API_BASE}/eventos/cancelar/${eventoId}`, {
+                method: 'PUT',
+                headers: authHeaders(),
+            });
+            const data = await r.json();
+            if (r.ok) {
+                alert('Evento cancelado con éxito');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'desconocido'));
+            }
+        } catch {
+            alert('Error de conexión');
+        }
+    });
 
     const logoutBtn = document.querySelector('.btn-primary');
     if (logoutBtn && logoutBtn.textContent.includes('Cerrar')) {

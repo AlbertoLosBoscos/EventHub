@@ -69,14 +69,14 @@ async function cargarMisTickets() {
         const container = document.getElementById('ticketsList');
         container.innerHTML = '';
 
-        const confirmados = tickets ? tickets.filter(t => t.confirmado) : [];
+        const activos = tickets ? tickets.filter(t => t.estado === 'confirmado' || t.estado === 'devuelto') : [];
 
-        if (confirmados.length === 0) {
-            container.innerHTML = '<p class="ticket-empty">No tienes tickets confirmados.</p>';
+        if (activos.length === 0) {
+            container.innerHTML = '<p class="ticket-empty">No tienes tickets.</p>';
             return;
         }
 
-        confirmados.forEach(ticket => {
+        activos.forEach(ticket => {
             const card = document.createElement('div');
             card.className = 'ticket-card';
 
@@ -94,7 +94,7 @@ async function cargarMisTickets() {
                     <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
                     <p><strong>Asientos:</strong> ${formatearAsientos(ticket.asientos)}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p><strong>Estado:</strong> ✅ Confirmado</p>
+                    <p><strong>Estado:</strong> ${ticket.estado === 'confirmado' ? '✅ Confirmado' : ticket.estado === 'devuelto' ? '↩️ Devuelto' : ticket.estado === 'cancelado' ? '❌ Cancelado' : '⏳ Pendiente'}</p>
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
@@ -185,12 +185,12 @@ async function cargarTodosTickets() {
                     <p><strong>Planta:</strong> ${ticket.planta ?? '-'}</p>
                     <p><strong>Asientos:</strong> ${formatearAsientos(ticket.asientos)}</p>
                     <p><strong>Fecha:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleDateString() : '-'}</p>
-                    <p><strong>Estado:</strong> ${ticket.confirmado ? '✅ Confirmado' : '⏳ Pendiente'}</p>
+                    <p><strong>Estado:</strong> ${ticket.estado === 'confirmado' ? '✅ Confirmado' : ticket.estado === 'devuelto' ? '↩️ Devuelto' : ticket.estado === 'cancelado' ? '❌ Cancelado' : '⏳ Pendiente'}</p>
                 </div>
                 <div class="ticket-actions">
                     <button class="btn-ticket-detalle" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Ver Detalles</button>
-                    <button class="btn-ticket-pdf" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Descargar PDF</button>
-                    ${puedeDevolver ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
+                    ${ticket.estado === 'confirmado' ? `<button class="btn-ticket-pdf" data-ticket='${encodeURIComponent(JSON.stringify(ticket))}'>Descargar PDF</button>` : ''}
+                    ${puedeDevolver && ticket.estado === 'confirmado' ? `<button class="btn-ticket-devolver" data-id="${ticket.id}">Devolver</button>` : ''}
                 </div>
             `;
             container.appendChild(card);
@@ -256,7 +256,7 @@ function descargarPDF(ticket) {
                 @media print { body { padding: 20px; } }
             </style>
         </head>
-        <body>
+        <body>5
             <h1>EventHub - Ticket</h1>
             <div class="ticket-box">
                 <div class="field"><span class="label">ID:</span> <span class="value">${ticket.id}</span></div>
@@ -268,7 +268,7 @@ function descargarPDF(ticket) {
                 <div class="field"><span class="label">Asientos:</span> <span class="value">${ticket.asientos || 'Ninguno'}</span></div>
                 <div class="field"><span class="label">Fecha evento:</span> <span class="value">${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</span></div>
                 <div class="field"><span class="label">Duración:</span> <span class="value">${ticket.duracion || '-'} min</span></div>
-                <div class="field"><span class="label">Estado:</span> <span class="value">${ticket.confirmado ? 'Confirmado' : 'Pendiente'}</span></div>
+                <div class="field"><span class="label">Estado:</span> <span class="value">${ticket.estado === 'confirmado' ? 'Confirmado' : ticket.estado === 'devuelto' ? 'Devuelto' : ticket.estado === 'cancelado' ? 'Cancelado' : 'Pendiente'}</span></div>
                 <div class="field"><span class="label">Creado:</span> <span class="value">${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</span></div>
             </div>
             <div class="footer">Generado por EventHub</div>
@@ -276,7 +276,7 @@ function descargarPDF(ticket) {
         </body>
         </html>
     `);
-    ventana.document.close();
+    ventana.document.close(); 
 }
 
 function mostrarDetalleTicket(ticket) {
@@ -294,7 +294,7 @@ function mostrarDetalleTicket(ticket) {
             <p><strong>Asientos:</strong> ${ticket.asientos || 'Ninguno'}</p>
             <p><strong>Fecha evento:</strong> ${ticket.fecha ? new Date(ticket.fecha).toLocaleString() : '-'}</p>
             <p><strong>Duración:</strong> ${ticket.duracion || '-'} min</p>
-            <p><strong>Estado:</strong> ${ticket.confirmado ? 'Confirmado' : 'Pendiente'}</p>
+            <p><strong>Estado:</strong> ${ticket.estado === 'confirmado' ? 'Confirmado' : ticket.estado === 'devuelto' ? 'Devuelto' : ticket.estado === 'cancelado' ? 'Cancelado' : 'Pendiente'}</p>
             <p><strong>Creado:</strong> ${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</p>
             <button id="cerrarDetalle">Cerrar</button>
         </div>

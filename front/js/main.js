@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ticketResult = await actualizarTicket(
                     currentTicket.id,
                     asientosStr,
-                    true
+                    'confirmado'
                 );
 
                 if (ticketResult.error) {

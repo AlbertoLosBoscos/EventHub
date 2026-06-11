@@ -120,7 +120,7 @@ export const crearTicket = async (req: Request, res: Response) => {
             .select('id')
             .eq('usuarioID', usuarioID)
             .eq('eventoID', eventoID)
-            .eq('confirmado', false);
+            .eq('estado', 'por confirmar');
         if (planta !== undefined) {
             query = query.eq('planta', planta);
         }
@@ -148,7 +148,7 @@ export const crearTicket = async (req: Request, res: Response) => {
                 fecha, 
                 duracion,
                 planta: planta ?? null,
-                confirmado: false })
+                estado: 'por confirmar' })
             .select()
             .single();
 
@@ -161,7 +161,7 @@ export const crearTicket = async (req: Request, res: Response) => {
 }
 
 export const actualizarTicket = async (req: Request, res: Response) => {
-    const { ticketID, asientos, confirmado, planta } = req.body;
+    const { ticketID, asientos, estado, planta } = req.body;
     
     if (!ticketID) {
         res.status(400).json({ error: 'Falta el ID del ticket' });
@@ -171,7 +171,7 @@ export const actualizarTicket = async (req: Request, res: Response) => {
     try {
         const updateData: any = {};
         if (asientos !== undefined) updateData.asientos = asientos;
-        if (confirmado !== undefined) updateData.confirmado = confirmado;
+        if (estado !== undefined) updateData.estado = estado;
         if (planta !== undefined) updateData.planta = planta;
 
         const { data, error } = await supabase
@@ -207,7 +207,7 @@ export const obtenerTicketPorUsuarioYEvento = async (req: Request, res: Response
             .select('*')
             .eq('usuarioID', usuarioID as string)
             .eq('eventoID', eventoID as string)
-            .eq('confirmado', false);
+            .eq('estado', 'por confirmar');
         if (planta !== undefined) {
             query = query.eq('planta', parseInt(planta as string));
         }
@@ -232,7 +232,7 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
     try {
         let query = supabase
             .from(tablaTicket)
-            .select('asientos, usuarioID, confirmado')
+            .select('asientos, usuarioID, estado')
             .eq('eventoID', eventoID as string);
         if (planta !== undefined) {
             query = query.eq('planta', parseInt(planta as string));
@@ -253,13 +253,13 @@ export const obtenerAsientosOcupados = async (req: Request, res: Response) => {
         const allTickets = data || [];
 
         const tusCompras = usuarioID
-            ? parseSeats(allTickets.filter(t => t.confirmado && t.usuarioID === usuarioID))
+            ? parseSeats(allTickets.filter(t => t.estado === 'confirmado' && t.usuarioID === usuarioID))
             : [];
 
         const ocupados = [...new Set(parseSeats(
             allTickets.filter(t => {
-                if (t.confirmado && usuarioID && t.usuarioID === usuarioID) return false;
-                if (!t.confirmado && usuarioID && t.usuarioID === usuarioID) return false;
+                if (t.estado === 'confirmado' && usuarioID && t.usuarioID === usuarioID) return false;
+                if (t.estado === 'por confirmar' && usuarioID && t.usuarioID === usuarioID) return false;
                 return true;
             })
         ))];
@@ -346,7 +346,7 @@ export const devolverEntradaCliente = async (req: Request, res: Response) => {
 
         const { error } = await supabase
             .from(tablaTicket)
-            .delete()
+            .update({ estado: 'devuelto' })
             .eq('id', ticketID);
 
         if (error) throw error;
@@ -398,7 +398,7 @@ export const devolverEntradaEmpleado = async (req: Request, res: Response) => {
 
         const { error } = await supabase
             .from(tablaTicket)
-            .delete()
+            .update({ estado: 'devuelto' })
             .eq('id', ticketID);
 
         if (error) throw error;
@@ -424,7 +424,7 @@ export const eliminarTicket = async (req: Request, res: Response) => {
         const { data: ticketsExpirados, error: findError } = await supabase
             .from(tablaTicket)
             .select('id')
-            .eq('confirmado', false)
+            .eq('estado', 'por confirmar')
             .lt('created_at', cincoMinutosAtras);
 
         if (findError) throw findError;
@@ -462,7 +462,7 @@ export const eliminarTicketsExpiradosCron = async () => {
         const { data: ticketsExpirados, error: findError } = await supabase
             .from(tablaTicket)
             .select('id')
-            .eq('confirmado', false)
+            .eq('estado', 'por confirmar')
             .lt('created_at', cincoMinutosAtras);
 
         if (findError) throw findError;

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import {supabase} from '../../supabase'
+import {supabase, supabaseAdmin} from '../../supabase'
+import { transporter } from '../../mailer';
 
 const tablaEvento = 'BDEventos';
 
@@ -96,6 +97,82 @@ export const actualizarEvento = async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const cancelarEvento = async (req: Request, res: Response) => {
+    const { eventoID } = req.params;
+    if (!eventoID) {
+        res.status(400).json({ error: 'Falta el ID del evento' });
+        return;
+    }
+    try {
+        const { data: evento, error: errEvento } = await supabase
+            .from(tablaEvento)
+            .select('nombre, fecha')
+            .eq('id', eventoID)
+            .single();
+        if (errEvento || !evento) {
+            res.status(404).json({ error: 'Evento no encontrado' });
+            return;
+        }
+
+        const { error: errUpdate } = await supabase
+            .from(tablaEvento)
+            .update({ estado: 'cancelado' })
+            .eq('id', eventoID);
+        if (errUpdate) throw errUpdate;
+
+        const { data: tickets } = await supabase
+            .from('BDTicket')
+            .select('id, usuarioID')
+            .eq('eventoID', eventoID)
+            .neq('estado', 'cancelado');
+
+        if (tickets && tickets.length > 0) {
+            await supabase
+                .from('BDTicket')
+                .update({ estado: 'cancelado' })
+                .eq('eventoID', eventoID)
+                .neq('estado', 'cancelado');
+        }
+
+        const from = process.env.MAIL_FROM || 'noreply@eventhub.com';
+        if (tickets && tickets.length > 0) {
+            const userIds = [...new Set(tickets.map((t: any) => t.usuarioID))];
+            for (const uid of userIds) {
+                try {
+                    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(uid);
+                    const email = userData?.user?.email;
+                    if (email) {
+                        await transporter.sendMail({
+                            from,
+                            to: email,
+                            subject: 'Evento cancelado - EventHub',
+                            html: `
+                                <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+                                    <h2 style="color: #c62828;">Evento Cancelado</h2>
+                                    <p>El evento <strong>${evento.nombre}</strong> ha sido cancelado.</p>
+                                    <p>Se reembolsará el costo del ticket.</p>
+                                    <hr>
+                                    <p><strong>Evento:</strong> ${evento.nombre}</p>
+                                    <p><strong>Fecha:</strong> ${evento.fecha ? new Date(evento.fecha).toLocaleString('es-ES') : '-'}</p>
+                                    <hr>
+                                    <p style="color: #666; font-size: 12px;">EventHub - Gestión de entradas</p>
+                                </div>
+                            `,
+                        });
+                        console.log(`Correo de cancelación enviado a ${email}`);
+                    }
+                } catch (mailErr: any) {
+                    console.error(`Error al enviar correo a ${uid}:`, mailErr.message);
+                }
+            }
+        }
+
+        res.json({ message: 'Evento cancelado con éxito y notificaciones enviadas' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 export const actualizarEstadosEventosCron = async () => {
     try {

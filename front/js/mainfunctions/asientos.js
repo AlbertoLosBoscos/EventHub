@@ -227,6 +227,7 @@ async function cargarAnfiteatro(pisoID) {
             await loadZonas();
             generateSeatGrid();
         }
+        selectedSeats = [];
         occupiedSeats = [];
         misComprasSeats = [];
         selectedPalco = null;

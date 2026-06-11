@@ -18,7 +18,7 @@ function suscribirEventoRealtime(eventoID) {
             { event: '*', schema: 'public', table: 'BDTicket', filter: `eventoID=eq.${eventoID}` },
             (payload) => {
                 if (realtimeUsuarioID && payload.new?.usuarioID === realtimeUsuarioID) {
-                    if (payload.eventType === 'UPDATE' && payload.old?.confirmado === false && payload.new?.confirmado === true) {
+                    if (payload.eventType === 'UPDATE' && payload.old?.estado === 'por confirmar' && payload.new?.estado === 'confirmado') {
                     } else {
                         return;
                     }
