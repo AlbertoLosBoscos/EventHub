@@ -227,17 +227,46 @@ async function cargarAnfiteatro(pisoID) {
             await loadZonas();
             generateSeatGrid();
         }
-        selectedSeats = [];
         occupiedSeats = [];
         misComprasSeats = [];
+        selectedSeats = [];
         selectedPalco = null;
+        selectedPalcoNumero = null;
+        selectedPalcoPrecio = 0;
+        selectedPalcoPisoID = null;
 
         const piso = pisos.find(p => p.id === pisoID);
         const planta = piso ? piso.planta : undefined;
         currentPisoPlanta = planta;
 
-        if (currentTicket && currentTicket.id && planta !== undefined) {
-            await actualizarTicket(currentTicket.id, undefined, undefined, planta);
+        if (planta !== undefined) {
+            const usuarioID = localStorage.getItem('usuarioId') || 'demo-user-123';
+            const ticketExistente = await obtenerTicketUsuarioEvento(usuarioID, currentEvent.eventoId, planta);
+            if (ticketExistente && ticketExistente.id) {
+                currentTicket = ticketExistente;
+                if (currentTicket.asientos) {
+                    const parts = currentTicket.asientos.split(',').map(s => s.trim()).filter(s => s);
+                    parts.forEach(p => {
+                        if (p.startsWith('PALCO-')) {
+                            selectedPalcoNumero = p.replace('PALCO-', '');
+                        } else {
+                            selectedSeats.push(p);
+                        }
+                    });
+                }
+            } else {
+                const result = await crearTicket(usuarioID, '', currentEvent.eventoId, currentEvent.fecha, currentEvent.duracion, planta);
+                if (result.data && result.data.id) {
+                    currentTicket = result.data;
+                } else if (result.error) {
+                    console.error('Error al crear ticket: ' + result.error);
+                } else if (result.message) {
+                    const ticketActualizado = await obtenerTicketUsuarioEvento(usuarioID, currentEvent.eventoId, planta);
+                    if (ticketActualizado && ticketActualizado.id) {
+                        currentTicket = ticketActualizado;
+                    }
+                }
+            }
         }
 
         generateSeatGrid();

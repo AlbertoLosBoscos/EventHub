@@ -5,12 +5,14 @@ function authHeaders(extra) {
     return { ...headers, ...extra };
 }
 
-async function crearTicket(usuarioID, asientos, eventoID, fecha, duracion) {
+async function crearTicket(usuarioID, asientos, eventoID, fecha, duracion, planta) {
     try {
+        const body = { usuarioID, asientos, eventoID, fecha, duracion };
+        if (planta !== undefined) body.planta = planta;
         const response = await fetch(`${API_BASE}/tickets/crear`, {
             method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({ usuarioID, asientos, eventoID, fecha, duracion })
+            body: JSON.stringify(body)
         });
         return await response.json();
     } catch (error) {
@@ -35,12 +37,14 @@ async function actualizarTicket(ticketID, asientos, estado, planta) {
     }
 }
 
-async function obtenerTicketUsuarioEvento(usuarioID, eventoID) {
+async function obtenerTicketUsuarioEvento(usuarioID, eventoID, planta) {
     try {
         const token = localStorage.getItem('token');
         const headers = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        const response = await fetch(`${API_BASE}/tickets/por-usuario-y-evento?usuarioID=${usuarioID}&eventoID=${eventoID}`, { headers });
+        let url = `${API_BASE}/tickets/por-usuario-y-evento?usuarioID=${usuarioID}&eventoID=${eventoID}`;
+        if (planta !== undefined) url += `&planta=${planta}`;
+        const response = await fetch(url, { headers });
         return await response.json();
     } catch (error) {
         console.error('Error:', error);

@@ -1,7 +1,11 @@
-async function fetchPalcosOcupados(eventoID) {
+let selectedPalcoPisoID = null;
+
+async function fetchPalcosOcupados(eventoID, planta) {
     try {
         const usuarioID = localStorage.getItem('usuarioId') || '';
-        const r = await fetch(`${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}&usuarioID=${usuarioID}`);
+        let url = `${API_BASE}/tickets/asientos-ocupados?eventoID=${eventoID}&usuarioID=${usuarioID}`;
+        if (planta !== undefined) url += `&planta=${planta}`;
+        const r = await fetch(url);
         const data = await r.json();
         const ocupados = (data.ocupados || []).filter(s => s.startsWith('PALCO-'));
         const tusCompras = (data.tusCompras || []).filter(s => s.startsWith('PALCO-'));
@@ -32,16 +36,13 @@ async function cargarPalcos(pisoID) {
             container.innerHTML = '<p class="palco-empty">No hay palcos en este piso.</p>';
             return;
         }
-        const ocupados = await fetchPalcosOcupados(currentEvent.eventoId);
-        if (selectedPalcoNumero) {
+        const pisoObj = pisos.find(p => p.id === pisoID);
+        const ocupados = await fetchPalcosOcupados(currentEvent.eventoId, pisoObj?.planta);
+        if (selectedPalcoNumero && (!selectedPalcoPisoID || selectedPalcoPisoID === pisoID)) {
             const palco = (palcos || []).find(p => String(p.numero) === String(selectedPalcoNumero));
             if (palco) {
                 selectedPalco = palco.id;
                 selectedPalcoPrecio = palco.precio;
-            } else {
-                selectedPalco = null;
-                selectedPalcoNumero = null;
-                selectedPalcoPrecio = 0;
             }
         }
         container.innerHTML = palcos.map(p => {
@@ -68,8 +69,10 @@ window.seleccionarPalco = async function(palcoID) {
         selectedPalco = null;
         selectedPalcoNumero = null;
         selectedPalcoPrecio = 0;
+        selectedPalcoPisoID = null;
     } else {
         selectedPalco = palcoID;
+        selectedPalcoPisoID = selectedPisoID;
         try {
             const r = await fetch(`${API_BASE}/palcos/mostrar?pisoID=${selectedPisoID}`);
             const palcos = await r.json();

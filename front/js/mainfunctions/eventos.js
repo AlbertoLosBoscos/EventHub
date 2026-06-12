@@ -52,10 +52,15 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha, sit
 
     currentEvent = { eventoId, nombre, duracion, fecha };
     currentSitioID = sitioID;
+    currentTicket = null;
 
     selectedSeats = [];
     occupiedSeats = [];
     misComprasSeats = [];
+    selectedPalco = null;
+    selectedPalcoNumero = null;
+    selectedPalcoPrecio = 0;
+    selectedPalcoPisoID = null;
 
     document.querySelectorAll('.event-card').forEach(card => {
         card.classList.remove('event-card-selected');
@@ -65,39 +70,6 @@ window.seleccionarEvento = async function(eventoId, nombre, duracion, fecha, sit
     if (selectedCard) {
         selectedCard.classList.add('event-card-selected');
         selectedCard.innerHTML += '<div class="event-badge-selected">SELECCIONADO</div>';
-    }
-
-    const ticketExistente = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
-
-    if (ticketExistente && ticketExistente.id) {
-        currentTicket = ticketExistente;
-        selectedPalco = null;
-        selectedPalcoNumero = null;
-        selectedPalcoPrecio = 0;
-        selectedSeats = [];
-        if (ticketExistente.asientos) {
-            const parts = ticketExistente.asientos.split(',').map(s => s.trim()).filter(s => s);
-            parts.forEach(p => {
-                if (p.startsWith('PALCO-')) {
-                    selectedPalcoNumero = p.replace('PALCO-', '');
-                } else {
-                    selectedSeats.push(p);
-                }
-            });
-        }
-    } else {
-        const result = await crearTicket(usuarioID, '', eventoId, fecha, duracion);
-        if (result.data && result.data.id) {
-            currentTicket = result.data;
-            selectedSeats = [];
-        } else if (result.error) {
-            console.error('Error al crear ticket: ' + result.error);
-        } else if (result.message) {
-            const ticketActualizado = await obtenerTicketUsuarioEvento(usuarioID, eventoId);
-            if (ticketActualizado && ticketActualizado.id) {
-                currentTicket = ticketActualizado;
-            }
-        }
     }
 
     document.getElementById('step3').classList.remove('hidden');
