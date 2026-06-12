@@ -269,6 +269,6 @@ async function cargarPisos(sitioID) {
 window.seleccionarPiso = async function(pisoID) {
     selectedPisoID = pisoID;
     renderPisoSelector();
-    document.getElementById('seatsSubtitle').textContent = `Planta ${pisos.find(p => p.id === pisoID)?.planta || ''}`;
+    document.getElementById('seatsSubtitle').textContent = `Anfiteatro ${pisos.find(p => p.id === pisoID)?.planta || ''}`;
     await cargarAnfiteatro(pisoID);
 };

@@ -69,7 +69,7 @@ function renderPisoSelector() {
     container.innerHTML = pisos.map(p => `
         <button class="piso-btn${selectedPisoID === p.id ? ' active' : ''}"
                 onclick="seleccionarPiso('${p.id}')">
-            Planta ${p.planta}
+            Anfiteatro ${p.planta}
         </button>
     `).join('');
 }
@@ -89,7 +89,7 @@ function updateSummary() {
     if (selectedPalco) {
         const tag = document.createElement('span');
         tag.className = 'seat-tag';
-        tag.textContent = `Palco ${selectedPalcoNumero || '?'} - Planta ${pisos.find(p => p.id === selectedPisoID)?.planta || ''}`;
+        tag.textContent = `Palco ${selectedPalcoNumero || '?'} - Anfiteatro ${pisos.find(p => p.id === selectedPisoID)?.planta || ''}`;
         selectedSeatsList.appendChild(tag);
     }
 
