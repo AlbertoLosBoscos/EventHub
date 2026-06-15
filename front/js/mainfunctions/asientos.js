@@ -2,6 +2,7 @@ let zonaRow = null;
 let zonaPriceMap = {};
 let zonaSeatMap = {};
 let disabledSeats = [];
+let visibilidadReducidaSeats = [];
 
 async function loadZonas() {
     if (!currentAnfiteatro || !currentAnfiteatro.id) {
@@ -9,6 +10,7 @@ async function loadZonas() {
         zonaPriceMap = {};
         zonaSeatMap = {};
         disabledSeats = [];
+        visibilidadReducidaSeats = [];
         return;
     }
     try {
@@ -18,6 +20,7 @@ async function loadZonas() {
             zonaPriceMap = {};
             zonaSeatMap = {};
             disabledSeats = [];
+            visibilidadReducidaSeats = [];
             return;
         }
 
@@ -53,6 +56,7 @@ async function loadZonas() {
         });
 
         disabledSeats = parseSeats(zonaRow.asientosDiscapacitados);
+        visibilidadReducidaSeats = parseSeats(zonaRow.visibilidadReducida);
     } catch (e) {
         console.error('[Zonas] Error al cargar zonas:', e);
         zonaPriceMap = {};
@@ -203,6 +207,9 @@ function generateSeatGrid() {
             }
             if (disabledSeats.includes(seatId)) {
                 seat.classList.add('seat-disabled');
+            }
+            if (visibilidadReducidaSeats.includes(seatId)) {
+                seat.classList.add('seat-visibilidad-reducida');
             }
 
             seat.addEventListener('click', () => toggleSeat(seat, seatId));

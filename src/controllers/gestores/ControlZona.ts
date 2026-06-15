@@ -35,6 +35,7 @@ export const verZonas = async (req: Request, res: Response) => {
             data.Zona2 = parseZonaText(data.Zona2);
             data.Zona3 = parseZonaText(data.Zona3);
             data.asientosDiscapacitados = parseZonaText(data.asientosDiscapacitados);
+            data.visibilidadReducida = parseZonaText(data.visibilidadReducida);
         }
         res.json(data || {});
     } catch (error: any) {
@@ -43,7 +44,7 @@ export const verZonas = async (req: Request, res: Response) => {
 };
 
 export const upsertZonas = async (req: Request, res: Response) => {
-    const { anfiteatroID, asientosVips, precioVips, Zona1, precioZona1, Zona2, precioZona2, Zona3, precioZona3, asientosDiscapacitados } = req.body;
+    const { anfiteatroID, asientosVips, precioVips, Zona1, precioZona1, Zona2, precioZona2, Zona3, precioZona3, asientosDiscapacitados, visibilidadReducida } = req.body;
 
     if (!anfiteatroID) {
         res.status(400).json({ error: 'anfiteatroID requerido' });
@@ -69,6 +70,7 @@ export const upsertZonas = async (req: Request, res: Response) => {
             Zona3: stringify(Zona3),
             precioZona3: precioZona3 ?? 0,
             asientosDiscapacitados: stringify(asientosDiscapacitados),
+            visibilidadReducida: stringify(visibilidadReducida),
         };
 
         let data;

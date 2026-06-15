@@ -219,6 +219,7 @@ let zonaData = {};
 let zonaSelectedField = 'asientosVips';
 let zonaGridSeats = [];
 let modoDiscapacitado = false;
+let modoVisibilidadReducida = false;
 
 function parseSeats(val) {
     if (Array.isArray(val)) return val;
@@ -286,6 +287,17 @@ function toggleZonaSeat(seat, seatId) {
         return;
     }
 
+    if (modoVisibilidadReducida) {
+        const arr = zonaData.visibilidadReducida || [];
+        if (arr.includes(seatId)) {
+            zonaData.visibilidadReducida = arr.filter(s => s !== seatId);
+        } else {
+            zonaData.visibilidadReducida = [...arr, seatId];
+        }
+        actualizarGrid();
+        return;
+    }
+
     if (seatInOtherZone(seatId)) {
         const zone = seatZoneName(seatId);
         mostrarMensaje('mensajeGestionarZonas', `Este asiento ya pertenece a ${zone}. Quítalo de allí primero.`, 'error');
@@ -309,23 +321,26 @@ function actualizarGrid() {
     });
 
     const disabled = zonaData.asientosDiscapacitados || [];
+    const visibilidad = zonaData.visibilidadReducida || [];
     const zoneLabels = { asientosVips: 'VIP', Zona1: 'Z1', Zona2: 'Z2', Zona3: 'Z3' };
 
     zonaGridSeats.forEach(({ el, id }) => {
-        el.classList.remove('zona-highlight', 'vip', 'discapacitados');
+        el.classList.remove('zona-highlight', 'vip', 'discapacitados', 'visibilidad-reducida');
         el.title = '';
 
         const inCurrent = (zonaData[zonaSelectedField] || []).includes(id);
         const inOther = seatToZone[id] && seatToZone[id] !== zonaSelectedField;
         const isDisabled = disabled.includes(id);
+        const isVisibilidad = visibilidad.includes(id);
 
         if (isDisabled) el.classList.add('discapacitados');
+        if (isVisibilidad) el.classList.add('visibilidad-reducida');
 
         if (inCurrent) {
             el.classList.add('zona-highlight');
             if (zonaSelectedField === 'asientosVips') el.classList.add('vip');
             el.style.opacity = '1';
-        } else if (inOther && !modoDiscapacitado) {
+        } else if (inOther && !modoDiscapacitado && !modoVisibilidadReducida) {
             el.style.opacity = '0.4';
             el.title = `Pertenece a ${zoneLabels[seatToZone[id]]}`;
         } else {
@@ -394,6 +409,7 @@ async function cargarZonaPorPiso(pisoID) {
             Zona3: parseSeats(zData?.Zona3),
             precioZona3: zData?.precioZona3 || 0,
             asientosDiscapacitados: parseSeats(zData?.asientosDiscapacitados),
+            visibilidadReducida: parseSeats(zData?.visibilidadReducida),
         };
 
         document.getElementById('zonaGridContainer').classList.remove('hidden');
@@ -421,6 +437,7 @@ async function guardarZonas() {
         Zona3: zonaData.Zona3,
         precioZona3: zonaData.precioZona3,
         asientosDiscapacitados: zonaData.asientosDiscapacitados,
+        visibilidadReducida: zonaData.visibilidadReducida,
     };
     const headers = { ...authAdminHeaders(), 'Content-Type': 'application/json' };
     try {

@@ -466,6 +466,11 @@ body {
     border-color: #0D47A1;
 }
 
+.legend-visibilidad-reducida {
+    background-color: #E53935;
+    border-color: #E53935;
+}
+
 .piso-selector {
     display: flex;
     gap: 0.5rem;
@@ -686,6 +691,11 @@ body {
     background-color: #1565C0;
     border-color: #0D47A1;
     color: #fff;
+}
+
+.seat-visibilidad-reducida {
+    background-color: #FFCDD2;
+    border-color: #E53935;
 }
 
 .seat-selected {

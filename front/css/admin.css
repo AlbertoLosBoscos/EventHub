@@ -426,20 +426,20 @@ body {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #1565C0;
     background: #e3f2fd;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
     cursor: pointer;
-    white-space: nowrap;
 }
 
 .zona-disabled-label input {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.1rem;
+    height: 1.1rem;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .anfi-seat.zona-highlight {
@@ -459,4 +459,30 @@ body {
     background: #1565C0;
     border-color: #0D47A1;
     color: #fff;
+}
+
+.anfi-seat.visibilidad-reducida {
+    background: #EF9A9A;
+    border-color: #C62828;
+    color: #fff;
+}
+
+.zona-visibilidad-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #C62828;
+    background: #FFEBEE;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.zona-visibilidad-label input {
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
 }

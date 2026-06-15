@@ -114,6 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         actualizarGrid();
     });
+    document.getElementById('inputModoVisibilidadReducida').addEventListener('change', (e) => {
+        modoVisibilidadReducida = e.target.checked;
+        document.getElementById('inputZonaTipo').disabled = e.target.checked;
+        document.getElementById('inputZonaPrecio').disabled = e.target.checked;
+
+        actualizarGrid();
+    });
 
     cargarSitiosSelect('inputPisoSitio');
     cargarSitiosSelect('inputAnfiSitio');
