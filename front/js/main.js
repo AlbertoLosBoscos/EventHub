@@ -24,7 +24,7 @@ let realtimeChannel = null;
 let realtimeUsuarioID = null;
 let currentPisoPlanta = undefined;
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
 async function fetchStripeKey() {
     try {

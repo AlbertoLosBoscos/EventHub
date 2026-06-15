@@ -13,7 +13,7 @@ formRegistro.addEventListener('submit', async (e) => {
     const password = document.getElementById('passwordUsuario').value;
 
     try {
-        const respuesta = await fetch('http://localhost:3000/api/auth/register', {
+        const respuesta = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })

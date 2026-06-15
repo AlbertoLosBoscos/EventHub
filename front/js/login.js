@@ -11,7 +11,7 @@ formLogin.addEventListener('submit', async (e) => {
     const password = document.getElementById('passwordUsuario').value;
 
     try {
-        const respuesta = await fetch('http://localhost:3000/api/auth/login', {
+        const respuesta = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -44,11 +44,11 @@ btnRegistro.addEventListener('click', () => {
 });
 
 btnGitHub.addEventListener('click', () => {
-    window.location.href = 'http://localhost:3000/api/auth/login/github';
+    window.location.href = '/api/auth/login/github';
 });
 
 btnGoogle.addEventListener('click', () => {
-    window.location.href = 'http://localhost:3000/api/auth/login/google';
+    window.location.href = '/api/auth/login/google';
 });
 
 btnRecuperar.addEventListener('click', async () => {
@@ -61,7 +61,7 @@ btnRecuperar.addEventListener('click', async () => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/auth/recuperar-contrasena', {
+        const res = await fetch('/api/auth/recuperar-contrasena', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -89,7 +89,7 @@ btnMagicLink.addEventListener('click', async () => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/auth/magic-link', {
+        const res = await fetch('/api/auth/magic-link', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
