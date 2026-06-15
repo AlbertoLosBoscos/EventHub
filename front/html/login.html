@@ -3,32 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Iniciar Sesión - EventHub</title>
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
+    <header class="auth-header">
+        <div class="auth-header-container">
+            <img class="logo" src="https://iseldzhneqbgbelnvxck.supabase.co/storage/v1/object/public/eventos/eventos/logo/LogoEventHub%20(1).png" alt="EventHub">
+            <a href="/guest" class="btn-volver">Volver a invitado</a>
+        </div>
+    </header>
 
-    <div class="login-container">
-        <h2>Iniciar Sesión</h2>
-        
-        <form id="formLogin">
-    <input type="text" id="emailUsuario" placeholder="Usuario" required>
-    <input type="password" id="passwordUsuario" placeholder="Contraseña" required>
-    
-    <button type="submit">Entrar</button>
-    <button type="button" id="btnRegistro">Registrarse</button>
-    <button type="button" id="btnGitHub" style="background-color: blue;">Entrar con GitHub</button>
-    <button type="button" id="btnGoogle" style="background-color: blue;">Entrar con Google</button>
-    <button type="button" id="btnMagicLink" style="background-color: blue;">Recibir enlace mágico por correo</button>
-    <button type="button" id="btnRecuperar" style="background-color: purple;">Recuperar Contraseña</button>
-    <button type="button" id="btnSalir" style="background-color: gray;">Salir</button>
-    
-</form>
+    <main class="auth-main">
+        <div class="auth-card">
+            <h2>Iniciar Sesión</h2>
+            
+            <form id="formLogin">
+                <div class="auth-field">
+                    <label for="emailUsuario">Usuario</label>
+                    <input type="text" id="emailUsuario" placeholder="Tu usuario" required>
+                </div>
+                <div class="auth-field">
+                    <label for="passwordUsuario">Contraseña</label>
+                    <input type="password" id="passwordUsuario" placeholder="Tu contraseña" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Entrar</button>
+                <button type="button" id="btnRegistro" class="btn-secondary">Crear cuenta</button>
+                <button type="button" id="btnRecuperar" class="btn-link">¿Olvidaste tu contraseña?</button>
+                <div class="auth-divider"><span>O continúa con</span></div>
+                <button type="button" id="btnGitHub" class="btn-social" style="display:none">Entrar con GitHub</button>
+                <button type="button" id="btnGoogle" class="btn-social">Entrar con Google</button>
+                <button type="button" id="btnMagicLink" class="btn-social">Enlace mágico por correo</button>
+            </form>
 
-        <p id="mensajeError" class="error">Credenciales incorrectas</p>
-        
-    </div>
+            <p id="mensajeError" class="error">Credenciales incorrectas</p>
+        </div>
+    </main>
     <script src="../js/login.js"></script>
-
 </body>
 </html>

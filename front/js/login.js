@@ -4,8 +4,6 @@ const btnRegistro = document.getElementById('btnRegistro');
 const btnGitHub = document.getElementById('btnGitHub');
 const btnGoogle = document.getElementById('btnGoogle');
 const btnMagicLink = document.getElementById('btnMagicLink');
-const btnSalir = document.getElementById('btnSalir');
-const btnRecuperar = document.getElementById('btnRecuperar');
 
 formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -51,10 +49,6 @@ btnGitHub.addEventListener('click', () => {
 
 btnGoogle.addEventListener('click', () => {
     window.location.href = 'http://localhost:3000/api/auth/login/google';
-});
-
-btnSalir.addEventListener('click', () => {
-    window.location.href = '/guest';
 });
 
 btnRecuperar.addEventListener('click', async () => {
