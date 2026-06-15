@@ -34,7 +34,6 @@ function renderizarEventos(eventos) {
                 <h3 class="event-name">${evento.nombre}</h3>
                 <p class="event-location">📍 ${evento.sitio?.nombre && evento.sitio?.url_maps ? `<a href="${evento.sitio.url_maps}" target="_blank" class="map-link">${evento.sitio.nombre}</a>` : (evento.sitio?.nombre || 'Por determinar')}</p>
                 <div class="event-footer">
-                    <span class="event-price">€${evento.precio || '45.00'}</span>
                     <span class="event-badge estado-${evento.estado || 'disponible'}">${badgeMap[evento.estado] || '✅ Disponible'}</span>
                 </div>
             </div>

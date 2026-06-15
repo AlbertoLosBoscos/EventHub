@@ -36,7 +36,6 @@ function renderizarEventos(eventos) {
                 <p class="event-location">📍 ${evento.sitio?.nombre && evento.sitio?.url_maps ? `<a href="${evento.sitio.url_maps}" target="_blank" class="map-link">${evento.sitio.nombre}</a>` : (evento.sitio?.nombre || 'Por determinar')}</p>
                 <p class="event-date">📅 ${new Date(evento.fecha).toLocaleString('es-ES')}</p>
                 <div class="event-footer">
-                    <span class="event-price">€${evento.precio || '45.00'}</span>
                     <span class="event-badge estado-${evento.estado || 'disponible'}">${badgeMap[evento.estado] || '✅ Disponible'}</span>
                 </div>
             </div>
