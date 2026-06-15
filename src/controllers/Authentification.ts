@@ -88,7 +88,7 @@ export const loginConGoogle = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `http://${req.get('host')}/api/auth/callback`
+      redirectTo: `${req.protocol}://${req.get('host')}/api/auth/callback`
     }
   });
 
@@ -108,7 +108,7 @@ export const loginConGithub = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `http://${req.get('host')}/api/auth/callback`
+      redirectTo: `${req.protocol}://${req.get('host')}/api/auth/callback`
     }
   });
 
@@ -151,7 +151,7 @@ export const recuperarContrasena = async (req: Request, res: Response) => {
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `http://${req.get('host')}/recuperar-contrasena`,
+    redirectTo: `${req.protocol}://${req.get('host')}/recuperar-contrasena`,
   });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -163,7 +163,7 @@ export const magicLink = async (req: Request, res: Response) => {
     const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-            emailRedirectTo: `http://${req.get('host')}/api/auth/callback`,
+            emailRedirectTo: `${req.protocol}://${req.get('host')}/api/auth/callback`,
         },
     });
 
