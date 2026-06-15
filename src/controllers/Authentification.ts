@@ -15,7 +15,6 @@ declare global {
     }
 }
 
-const localhost = process.env.LOCAL_HOST || '';
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const serviceKey = process.env.SUPABASE_API_EVENTHUB || '';
 
@@ -89,7 +88,7 @@ export const loginConGoogle = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${localhost}/api/auth/callback`
+      redirectTo: `http://${req.get('host')}/api/auth/callback`
     }
   });
 
@@ -109,7 +108,7 @@ export const loginConGithub = async (req: Request, res: Response) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `${localhost}/api/auth/callback`
+      redirectTo: `http://${req.get('host')}/api/auth/callback`
     }
   });
 
@@ -152,7 +151,7 @@ export const recuperarContrasena = async (req: Request, res: Response) => {
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${localhost}/recuperar-contrasena`,
+    redirectTo: `http://${req.get('host')}/recuperar-contrasena`,
   });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -164,7 +163,7 @@ export const magicLink = async (req: Request, res: Response) => {
     const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-            emailRedirectTo: `${localhost}/api/auth/callback`,
+            emailRedirectTo: `http://${req.get('host')}/api/auth/callback`,
         },
     });
 
